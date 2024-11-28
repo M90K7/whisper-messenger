@@ -1,0 +1,7 @@
+{
+  "name": "whisper-messenger",
+  "scripts": {
+    "migrate": "dotnet ef migrations add InitialCreate",
+    "migrate:update": "dotnet ef database update"
+  }
+}
