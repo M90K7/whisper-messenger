@@ -1,3 +1,4 @@
+// "prestart": "node aspnetcore-https",
 // This script sets up HTTPS for the application using the ASP.NET Core HTTPS certificate
 const fs = require('fs');
 const spawn = require('child_process').spawn;
@@ -12,7 +13,7 @@ const certificateArg = process.argv.map(arg => arg.match(/--name=(?<value>.+)/i)
 const certificateName = certificateArg ? certificateArg.groups.value : process.env.npm_package_name;
 
 if (!certificateName) {
-  console.error('Invalid certificate name. Run this script in the context of an npm/yarn script or pass --name=<<app>> explicitly.')
+  console.error('Invalid certificate name. Run this script in the context of an npm/yarn script or pass --name=<<app>> explicitly.');
   process.exit(-1);
 }
 
@@ -29,5 +30,5 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     'Pem',
     '--no-password',
   ], { stdio: 'inherit', })
-  .on('exit', (code) => process.exit(code));
+    .on('exit', (code) => process.exit(code));
 }

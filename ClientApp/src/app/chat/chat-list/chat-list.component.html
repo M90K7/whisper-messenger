@@ -1,0 +1,9 @@
+<mat-list>
+  <mat-list-item *ngFor="let user of users"
+                 (click)="selectUser(user)">
+    <mat-icon *ngIf="user.online">online</mat-icon>
+    <img [src]="user.avatar"
+         alt="Avatar" />
+    <h3>{{ user.username }}</h3>
+  </mat-list-item>
+</mat-list>

@@ -35,15 +35,16 @@ namespace ChatApp.Controllers
       return Ok(messages);
     }
 
-    [HttpGet("history/{userId}")]
-    public async Task<IActionResult> GetChatHistory(int userId)
+    [HttpGet("history/{userId}/{page}")]
+    public async Task<IActionResult> GetChatHistory(int userId, int page = 1, int pageSize = 20)
     {
       var currentUserId = int.Parse(User.Identity.Name);
-
       var messages = await _context.Messages
           .Where(m => (m.SenderId == currentUserId && m.ReceiverId == userId) ||
                       (m.SenderId == userId && m.ReceiverId == currentUserId))
-          .OrderBy(m => m.Timestamp)
+          .OrderByDescending(m => m.Timestamp)
+          .Skip((page - 1) * pageSize)
+          .Take(pageSize)
           .ToListAsync();
 
       return Ok(messages);

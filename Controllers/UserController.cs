@@ -75,6 +75,32 @@ namespace ChatApp.Controllers
 
       return Ok(users);
     }
+
+    [HttpPut("update-profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+      var userId = int.Parse(User.Identity.Name);
+      var user = await _userManager.FindByIdAsync(userId.ToString());
+
+      if (user == null) return NotFound();
+
+      // Update user properties
+      user.UserName = request.Username ?? user.UserName;
+      user.FullName = request.DisplayName ?? user.FullName;
+
+      if (!string.IsNullOrEmpty(request.Password))
+      {
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.Password);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+      }
+
+      // Save updated user
+      var updateResult = await _userManager.UpdateAsync(user);
+      if (!updateResult.Succeeded) return BadRequest(updateResult.Errors);
+
+      return Ok(new { message = "Profile updated successfully!" });
+    }
   }
 
   public class CreateUserRequest
@@ -93,5 +119,13 @@ namespace ChatApp.Controllers
     public string FullName { get; set; }
     public string Email { get; set; }
     public string? Avatar { get; set; }
+  }
+
+  public class UpdateProfileRequest
+  {
+    public string? Username { get; set; }
+    public string? DisplayName { get; set; }
+    public string? Password { get; set; }
+    public string? CurrentPassword { get; set; } // For password updates
   }
 }

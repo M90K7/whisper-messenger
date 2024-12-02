@@ -1,0 +1,46 @@
+<div class="chat-room">
+  <!-- Messages List -->
+  <div class="messages"
+       #messageList>
+    <div *ngFor="let message of messages"
+         class="message"
+         [ngClass]="{ sent: message.isSent, received: !message.isSent }">
+      <div class="message-content">
+        <p *ngIf="message.content">{{ message.content }}</p>
+        <img *ngIf="isImage(message.filePath)"
+             [src]="message.filePath"
+             alt="Image" />
+        <video *ngIf="isVideo(message.filePath)"
+               [src]="message.filePath"
+               controls></video>
+        <a *ngIf="message.filePath && !isImage(message.filePath) && !isVideo(message.filePath)"
+           [href]="message.filePath"
+           download>
+          Download File
+        </a>
+      </div>
+      <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <form (ngSubmit)="sendMessage()"
+        class="input-area">
+    <input [(ngModel)]="newMessage"
+           name="newMessage"
+           placeholder="Type a message"
+           matInput />
+    <input type="file"
+           #fileInput
+           (change)="uploadFile($event)"
+           hidden />
+    <button type="button"
+            mat-icon-button
+            (click)="fileInput.click()">
+      <mat-icon>attach_file</mat-icon>
+    </button>
+    <button mat-raised-button
+            color="primary"
+            type="submit">Send</button>
+  </form>
+</div>
