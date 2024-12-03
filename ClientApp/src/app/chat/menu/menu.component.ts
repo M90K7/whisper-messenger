@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 
-import { MatToolbar } from "@angular/material/toolbar";
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatButtonModule } from "@angular/material/button";
 import { AuthService, ThemeService } from "@app/services";
 
 @Component({
   selector: 'app-menu',
-  imports: [MatToolbar],
+  imports: [MatToolbarModule, MatButtonModule],
   standalone: true,
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
