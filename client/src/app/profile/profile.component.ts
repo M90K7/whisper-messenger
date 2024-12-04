@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 
-import { MatCard } from "@angular/material/card";
-import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 
 import { UserService } from "@app/services";
 
@@ -11,8 +13,10 @@ import { UserService } from "@app/services";
   imports: [
     ReactiveFormsModule,
     FormsModule,
-    MatCard,
-    MatFormField, MatLabel
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule
   ],
   standalone: true,
   templateUrl: './profile.component.html',

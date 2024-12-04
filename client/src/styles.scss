@@ -1,39 +1,61 @@
-@import "@angular/material/prebuilt-themes/pink-bluegrey.css";
-// @use "./styles/themes" as themes;
+@use "@angular/material" as mat;
 
+html {
+  @include mat.theme(
+    (
+      color-scheme: light dark,
+      color: mat.$azure-palette,
+      typography: (
+        plain-family: iranyekan,
+        brand-family: iranyekan,
+        bold-weight: 900,
+        medium-weight: 500,
+        regular-weight: 300
+      ),
+      density: 0
+    )
+  );
+}
+
+html,
+body {
+  height: 100%;
+}
 body {
   margin: 0;
-  font-family: Roboto, Arial, sans-serif;
+  font-family: iranyekan !important;
+  scroll-behavior: smooth;
 }
 
-a {
-  color: #0366d6;
+// @import "@angular/cdk/overlay-prebuilt.css";
+// @import "@exir/elements/assets/exir-context-menu/base";
+// @import "@exir/elements/assets/exir-toast/style-bootstrap";
+// @import "./styles/share.scss";
+// @import "./styles/home.scss";
+
+body::-webkit-scrollbar {
+  width: 10px;
 }
 
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-  box-shadow:
-    0 0 0 0.1rem white,
-    0 0 0 0.25rem #258cfb;
+body::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.2);
 }
 
-code {
-  color: #e01a76;
-}
-
-.btn-primary {
+*::selection {
+  // background: mat.$azure-palette;
   color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
 }
 
-// .light-theme {
-//   @include themes.light-theme;
-// }
+.toast-container {
+  direction: rtl;
+  text-align: right;
+}
 
-// .dark-theme {
-//   @include themes.dark-theme;
-// }
+.a-flex-column {
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

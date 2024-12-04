@@ -1,0 +1,25 @@
+img {
+  border: 2px solid gray;
+  border-radius: 50%;
+  box-sizing: border-box;
+  &.is-online {
+    border-color: greenyellow;
+  }
+  &.is-offline {
+    border-color: gray;
+  }
+}
+.dot-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: block;
+  bottom: 4px;
+  position: absolute;
+  &.is-online {
+    background-color: greenyellow;
+  }
+  &.is-offline {
+    background-color: gray;
+  }
+}

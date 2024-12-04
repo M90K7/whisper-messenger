@@ -1,19 +1,24 @@
+import { CommonModule } from "@angular/common";
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
 
-import { MatCard } from "@angular/material/card";
-import { MatFormField, MatLabel } from "@angular/material/form-field";
+import { MatCardModule } from "@angular/material/card";
+import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
 import { AuthService } from "@app/services";
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatCard,
-    MatFormField,
-    MatLabel
+    MatCardModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatButtonModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -23,8 +28,8 @@ export class LoginComponent {
 
   constructor(private fb: FormBuilder, private authService: AuthService) {
     this.loginForm = this.fb.group({
-      username: [''],
-      password: ['']
+      username: ['', []],
+      password: ['', []]
     });
   }
 

@@ -1,22 +1,29 @@
-<mat-card>
-  <h2>Login</h2>
-  <form [formGroup]="loginForm"
-        (ngSubmit)="onSubmit()">
-    <mat-form-field>
-      <mat-label>Username</mat-label>
-      <input matInput
-             formControlName="username" />
-    </mat-form-field>
+<mat-card class="a-flex-column gap-4">
+  <mat-card-header>
+    <h2>سامانه ورود</h2>
+  </mat-card-header>
+  <mat-card-content>
+    <form class="a-flex-column"
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()">
+      <mat-form-field>
+        <mat-label>نام کاربری</mat-label>
+        <input matInput
+               name="username"
+               formControlName="username" />
+      </mat-form-field>
 
-    <mat-form-field>
-      <mat-label>Password</mat-label>
-      <input matInput
-             type="password"
-             formControlName="password" />
-    </mat-form-field>
+      <mat-form-field>
+        <mat-label>رمزعبور</mat-label>
+        <input matInput
+               name="password"
+               formControlName="password"
+               type="password" />
+      </mat-form-field>
 
-    <button mat-raised-button
-            color="primary"
-            type="submit">Login</button>
-  </form>
+      <button mat-flat-button
+              color="primary"
+              type="submit">ورود</button>
+    </form>
+  </mat-card-content>
 </mat-card>

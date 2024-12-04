@@ -1,0 +1,7 @@
+<app-menu></app-menu>
+<div class="row">
+  <app-chat-list class="col-2"
+                 (userSelected)="onUserSelected($event)"></app-chat-list>
+  <app-chat-room class="col"
+                 [selectedUser]="selectedUser"></app-chat-room>
+</div>

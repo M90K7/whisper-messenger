@@ -1,9 +1,16 @@
-<mat-list>
-  <mat-list-item *ngFor="let user of users"
+<mat-list class="d-flex flex-column gap-2">
+  @for (user of users; track $index) {
+  @let classOnline = user.online ? 'is-online': 'is-offline';
+  <mat-list-item class="position-relative gap-1"
                  (click)="selectUser(user)">
-    <mat-icon *ngIf="user.online">online</mat-icon>
     <img [src]="user.avatar"
-         alt="Avatar" />
-    <h3>{{ user.username }}</h3>
+         [class]="classOnline"
+         height="46"
+         alt="Avatar"
+         onerror="this.src = '/img/default-profile.svg'" />
+    <span class="dot-status"
+          [class]="classOnline"></span>
+    <span class="ms-2">{{ user.fullName || user.userName }}</span>
   </mat-list-item>
+  }
 </mat-list>
