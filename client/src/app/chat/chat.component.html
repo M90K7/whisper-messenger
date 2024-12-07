@@ -1,7 +1,10 @@
-<app-menu></app-menu>
-<div class="row">
-  <app-chat-list class="col-2"
+<div class="d-flex gap-4 h-100">
+  <app-chat-list #users
+                 class="col-2 ex-bg-gray1"
                  (userSelected)="onUserSelected($event)"></app-chat-list>
-  <app-chat-room class="col"
-                 [selectedUser]="selectedUser"></app-chat-room>
+
+  @if(users.userSelected$ | async; as user) {
+  <app-chat-room class="col ex-bg-gray1"
+                 [selectedUser]="user"></app-chat-room>
+  }
 </div>

@@ -1,7 +1,8 @@
 <mat-list class="d-flex flex-column gap-2">
   @for (user of users; track $index) {
   @let classOnline = user.online ? 'is-online': 'is-offline';
-  <mat-list-item class="position-relative gap-1"
+  <mat-list-item class="user-item position-relative gap-1"
+                 [class.active]="user === (userSelected$ | async)"
                  (click)="selectUser(user)">
     <img [src]="user.avatar"
          [class]="classOnline"

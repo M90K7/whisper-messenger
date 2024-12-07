@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
-import { MatToolbar } from "@angular/material/toolbar";
+import { MatCardModule } from "@angular/material/card";
 
 import { ChatListComponent } from "./chat-list/chat-list.component";
 import { ChatRoomComponent } from "./chat-room/chat-room.component";
 import { MenuComponent } from "./menu/menu.component";
+import { AsyncPipe } from "@angular/common";
 
 @Component({
   selector: 'app-chat',
   imports: [
-    MatToolbar,
+    AsyncPipe,
+    MatCardModule,
     ChatListComponent,
     ChatRoomComponent,
     MenuComponent

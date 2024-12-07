@@ -1,3 +1,17 @@
+:host {
+  border-radius: 20px;
+  border: 0.7px solid gray;
+  border-color: var(--ex-gray2);
+}
+.user-item {
+  transition: background 0.2s ease-in;
+  &:hover {
+    background: var(--ex-gray2);
+  }
+  &.active {
+    background: rgba(97, 132, 255, 0.1) !important;
+  }
+}
 img {
   border: 2px solid gray;
   border-radius: 50%;

@@ -1,4 +1,4 @@
-<div class="chat-room">
+<div class="chat-room h-100">
   <!-- Messages List -->
   <div class="messages"
        #messageList>
@@ -25,11 +25,16 @@
 
   <!-- Input Area -->
   <form (ngSubmit)="sendMessage()"
-        class="input-area">
-    <input [(ngModel)]="newMessage"
-           name="newMessage"
-           placeholder="Type a message"
-           matInput />
+        class="input-area d-flex align-items-center gap-2">
+    <mat-form-field class="flex-grow-1"
+                    [hideRequiredMarker]="true"
+                    [subscriptSizing]="'dynamic'">
+      <!-- <mat-label>متن پیام</mat-label> -->
+      <input [(ngModel)]="newMessage"
+             name="newMessage"
+             placeholder="متن پیام"
+             matInput />
+    </mat-form-field>
     <input type="file"
            #fileInput
            (change)="uploadFile($event)"
@@ -41,6 +46,6 @@
     </button>
     <button mat-raised-button
             color="primary"
-            type="submit">Send</button>
+            type="submit">ارسال</button>
   </form>
 </div>

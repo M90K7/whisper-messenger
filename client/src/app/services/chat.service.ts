@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
 export class ChatService {
   constructor(private http: HttpClient) { }
 
-  getChatHistory(receiverId: string, page: number) {
+  getChatHistory(receiverId: number, page: number) {
     return this.http.get<any[]>(`/api/chat/history/${receiverId}/${page}`);
   }
 

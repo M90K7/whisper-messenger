@@ -1,5 +1,6 @@
-import { NgFor, NgIf } from "@angular/common";
-import { Component, EventEmitter, Output } from '@angular/core';
+import { AsyncPipe, } from "@angular/common";
+import { Component, output } from '@angular/core';
+import { outputToObservable } from '@angular/core/rxjs-interop';
 
 import { MatListModule } from "@angular/material/list";
 import { MatIconModule } from "@angular/material/icon";
@@ -8,10 +9,10 @@ import { UserDto } from "@app/models";
 
 @Component({
   selector: 'app-chat-list',
-  imports: [NgFor, NgIf, MatListModule, MatIconModule],
+  imports: [AsyncPipe, MatListModule, MatIconModule],
   standalone: true,
   templateUrl: './chat-list.component.html',
-  styleUrl: './chat-list.component.scss'
+  styleUrl: './chat-list.component.scss',
 })
 export class ChatListComponent {
 
@@ -22,7 +23,10 @@ export class ChatListComponent {
     { fullName: "محمد اکبری" },
     { fullName: "جواد اکبری" },
   ];
-  @Output() userSelected = new EventEmitter<any>();
+
+  userSelected = output<UserDto>();
+
+  userSelected$ = outputToObservable(this.userSelected);
 
   constructor(private userService: UserService) {
     // this.loadUsers();

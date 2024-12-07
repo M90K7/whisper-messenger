@@ -1,10 +1,15 @@
 import { NgClass, NgFor, NgIf } from "@angular/common";
-import { Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, input } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
-import { MatIcon } from "@angular/material/icon";
+import { MatIconModule } from "@angular/material/icon";
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+
 
 import { ChatService, FileService } from "@app/services";
+import { UserDto } from "@app/models";
 
 @Component({
   selector: 'app-chat-room',
@@ -14,13 +19,17 @@ import { ChatService, FileService } from "@app/services";
     NgClass,
     NgIf,
     FormsModule,
-    MatIcon
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule
+
   ],
   templateUrl: './chat-room.component.html',
   styleUrls: ['./chat-room.component.scss'],
 })
 export class ChatRoomComponent implements OnInit {
-  @Input() selectedUser!: { id: string; username: string; }; // Receiver's info
+  readonly selectedUser = input.required<UserDto>(); // Receiver's info
   @ViewChild('messageList') messageList!: ElementRef;
 
   messages: any[] = [];
@@ -32,14 +41,14 @@ export class ChatRoomComponent implements OnInit {
   constructor(private chatService: ChatService, private fileService: FileService) { }
 
   ngOnInit(): void {
-    this.loadChatHistory();
+    // this.loadChatHistory();
   }
 
   loadChatHistory(): void {
     if (this.loading) return;
 
     this.loading = true;
-    this.chatService.getChatHistory(this.selectedUser.id, this.page).subscribe((history) => {
+    this.chatService.getChatHistory(this.selectedUser().id, this.page).subscribe((history) => {
       this.messages = [...history.reverse(), ...this.messages];
       this.page++;
       this.loading = false;
@@ -52,17 +61,20 @@ export class ChatRoomComponent implements OnInit {
   sendMessage(): void {
     if (!this.newMessage.trim()) return;
 
-    const messageData = {
+    const messageData: any = {
       senderId: this.currentUserId,
-      receiverId: this.selectedUser.id,
+      receiverId: this.selectedUser().id,
       content: this.newMessage,
     };
 
-    this.chatService.sendMessage(messageData).subscribe((newMessage) => {
-      this.messages.push({ ...newMessage, isSent: true });
-      this.newMessage = '';
-      this.scrollToBottom();
-    });
+
+    // this.chatService.sendMessage(messageData).subscribe((newMessage) => {
+    var newMessage = messageData;
+    newMessage.timestamp = Date.now();
+    this.messages.unshift({ ...newMessage, isSent: true });
+    this.newMessage = '';
+    this.scrollToBottom();
+    // });
   }
 
   uploadFile(event: any): void {
@@ -72,7 +84,7 @@ export class ChatRoomComponent implements OnInit {
     this.fileService.uploadFile(file).subscribe((filePath: string) => {
       const messageData = {
         senderId: this.currentUserId,
-        receiverId: this.selectedUser.id,
+        receiverId: this.selectedUser().id,
         content: '',
         filePath,
       };
