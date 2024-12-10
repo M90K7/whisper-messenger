@@ -1,4 +1,7 @@
 <div class="chat-room h-100">
+  <app-chat-room-header class="ex-bg-white"
+                        [user]="selectedUser()"></app-chat-room-header>
+  <!-- <mat-divider></mat-divider> -->
   <!-- Messages List -->
   <div class="messages"
        #messageList>
@@ -25,7 +28,7 @@
 
   <!-- Input Area -->
   <form (ngSubmit)="sendMessage()"
-        class="input-area d-flex align-items-center gap-2">
+        class="ex-bg-white d-flex align-items-center gap-2 pe-2">
     <mat-form-field class="flex-grow-1"
                     [hideRequiredMarker]="true"
                     [subscriptSizing]="'dynamic'">

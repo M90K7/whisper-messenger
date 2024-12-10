@@ -1,5 +1,60 @@
 @use "@angular/material" as mat;
 
+/* fallback */
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  src: url(/fonts/mat-icon-400.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 100 700;
+  src: url(/fonts/mat-icon-700.woff2) format("woff2");
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-icons {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+
 html {
   @include mat.theme(
     (
@@ -17,6 +72,10 @@ html {
   );
 }
 
+* {
+  margin: 0;
+  padding: 0;
+}
 html,
 body {
   height: 100%;
@@ -25,6 +84,13 @@ body {
   margin: 0;
   font-family: iranyekan !important;
   scroll-behavior: smooth;
+}
+
+a {
+  all: unset;
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 // @import "@angular/cdk/overlay-prebuilt.css";

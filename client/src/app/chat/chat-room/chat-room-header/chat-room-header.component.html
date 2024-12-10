@@ -1,0 +1,7 @@
+<div class="px-3 py-2 d-flex align-items-center gap-2">
+  <img [src]="user().avatar"
+       height="46"
+       alt="Avatar"
+       onerror="this.src = '/img/default-profile.svg'" />
+  <span>{{user().fullName || user().userName}}</span>
+</div>

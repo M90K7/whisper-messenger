@@ -6,5 +6,7 @@
   @if(users.userSelected$ | async; as user) {
   <app-chat-room class="col ex-bg-gray1"
                  [selectedUser]="user"></app-chat-room>
+  } @else {
+  <app-chat-empty></app-chat-empty>
   }
 </div>

@@ -1,10 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 
 import { MatCardModule } from "@angular/material/card";
+import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { MatDividerModule } from '@angular/material/divider';
 
 import { UserService } from "@app/services";
 
@@ -16,15 +18,19 @@ import { UserService } from "@app/services";
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose,
+    MatDividerModule
   ],
   standalone: true,
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent {
+  readonly dialogRef = inject(MatDialogRef<ProfileComponent>);
+
   profileForm: FormGroup;
-  defaultAvatar: string = 'assets/default-avatar.png'; // Replace with your default avatar path
+  defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
   previewAvatar: string | ArrayBuffer | null = null;
 
   constructor(private fb: FormBuilder, private userService: UserService) {
@@ -37,6 +43,10 @@ export class ProfileComponent {
 
   ngOnInit(): void {
     this.loadProfile();
+  }
+
+  save() {
+    this.dialogRef.close();
   }
 
   // Load current user profile
@@ -62,6 +72,7 @@ export class ProfileComponent {
 
   // Update profile
   updateProfile() {
+
     const profileData = this.profileForm.value;
     this.userService.updateProfile(profileData).subscribe(() => {
       alert('Profile updated successfully!');

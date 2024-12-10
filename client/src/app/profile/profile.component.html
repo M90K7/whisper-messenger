@@ -1,48 +1,57 @@
-<mat-card class="a-flex-column profile-page">
-  <mat-card-header>
-    <h2>User Profile</h2>
-  </mat-card-header>
-  <mat-card-content>
-    <form [formGroup]="profileForm"
-          (ngSubmit)="updateProfile()">
-      <!-- Avatar -->
-      <div class="avatar">
-        <img [src]="previewAvatar || defaultAvatar"
-             alt="Avatar" />
-        <input type="file"
-               accept="image/*"
-               (change)="onAvatarChange($event)" />
-      </div>
+<h2 mat-dialog-title>پروفایل</h2>
+<mat-divider></mat-divider>
+<mat-dialog-content>
+  <form class="d-flex flex-column gap-3 align-items-center"
+        [formGroup]="profileForm"
+        (ngSubmit)="updateProfile()">
+    <!-- Avatar -->
+    <div class="avatar">
+      <img [tabIndex]="0"
+           [src]="previewAvatar || defaultAvatar"
+           alt="Avatar"
+           (click)="fileInput.click()" />
+      <input #fileInput
+             class="d-none"
+             type="file"
+             accept="image/*"
+             (change)="onAvatarChange($event)" />
+    </div>
 
-      <!-- Username -->
-      <mat-form-field appearance="outline">
-        <mat-label>Username</mat-label>
-        <input matInput
-               name="username"
-               formControlName="username" />
-      </mat-form-field>
+    <!-- Username -->
+    <mat-form-field appearance="outline">
+      <mat-label>نام کاربری</mat-label>
+      <input matInput
+             name="username"
+             formControlName="username" />
+    </mat-form-field>
 
-      <!-- Display Name -->
-      <mat-form-field appearance="outline">
-        <mat-label>Display Name</mat-label>
-        <input matInput
-               name="displayName"
-               formControlName="displayName" />
-      </mat-form-field>
+    <!-- Display Name -->
+    <mat-form-field appearance="outline">
+      <mat-label>نام نمایشی</mat-label>
+      <input matInput
+             name="displayName"
+             formControlName="displayName" />
+    </mat-form-field>
 
-      <!-- Password -->
-      <mat-form-field appearance="outline">
-        <mat-label>New Password</mat-label>
-        <input matInput
-               type="password"
-               name="password"
-               formControlName="password" />
-      </mat-form-field>
+    <!-- Password -->
+    <mat-form-field appearance="outline">
+      <mat-label>رمـز عبور</mat-label>
+      <input matInput
+             type="password"
+             name="password"
+             formControlName="password" />
+    </mat-form-field>
 
-      <!-- Submit Button -->
-      <button mat-raised-button
-              color="primary"
-              type="submit">Update Profile</button>
-    </form>
-  </mat-card-content>
-</mat-card>
+
+  </form>
+</mat-dialog-content>
+<mat-divider></mat-divider>
+<mat-dialog-actions class="justify-content-around">
+  <!-- Submit Button -->
+  <button mat-raised-button
+          color="primary"
+          type="submit"
+          (click)="save()">ذخیره</button>
+  <button mat-button
+          mat-dialog-close>انصراف</button>
+</mat-dialog-actions>

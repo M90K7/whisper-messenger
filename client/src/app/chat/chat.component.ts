@@ -5,6 +5,7 @@ import { ChatListComponent } from "./chat-list/chat-list.component";
 import { ChatRoomComponent } from "./chat-room/chat-room.component";
 import { MenuComponent } from "./menu/menu.component";
 import { AsyncPipe } from "@angular/common";
+import { ChatEmptyComponent } from "./chat-empty/chat-empty.component";
 
 @Component({
   selector: 'app-chat',
@@ -13,7 +14,8 @@ import { AsyncPipe } from "@angular/common";
     MatCardModule,
     ChatListComponent,
     ChatRoomComponent,
-    MenuComponent
+    MenuComponent,
+    ChatEmptyComponent
   ],
   templateUrl: './chat.component.html',
   standalone: true,

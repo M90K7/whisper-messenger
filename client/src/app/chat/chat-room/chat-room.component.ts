@@ -6,10 +6,11 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-
+import { MatDividerModule } from '@angular/material/divider';
 
 import { ChatService, FileService } from "@app/services";
 import { UserDto } from "@app/models";
+import { ChatRoomHeaderComponent } from "./chat-room-header";
 
 @Component({
   selector: 'app-chat-room',
@@ -22,8 +23,9 @@ import { UserDto } from "@app/models";
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
-
+    MatButtonModule,
+    MatDividerModule,
+    ChatRoomHeaderComponent
   ],
   templateUrl: './chat-room.component.html',
   styleUrls: ['./chat-room.component.scss'],
