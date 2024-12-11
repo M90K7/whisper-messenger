@@ -4,21 +4,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
 namespace ChatApp.Controllers
 {
   [ApiController]
-  [Route("api/[controller]")]
+  [Route("api/auth")]
   public class AuthController : ControllerBase
   {
     private readonly UserManager<User> _userManager;
+    private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly JwtSettings _jwtSettings;
 
-    public AuthController(UserManager<User> userManager, IOptions<JwtSettings> jwtSettings)
+    public AuthController(UserManager<User> userManager,
+    RoleManager<IdentityRole<int>> roleManager,
+    IOptions<JwtSettings> jwtSettings)
     {
       _userManager = userManager;
+      this._roleManager = roleManager;
       _jwtSettings = jwtSettings.Value;
     }
 
@@ -44,7 +49,9 @@ namespace ChatApp.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, "User") // Adjust based on user role
+                new Claim(ClaimTypes.Role, string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())),
+                new Claim(ClaimTypes.GivenName, user.FullName ?? ""),
+                new Claim(ClaimTypes.Uri, user.Avatar ?? ""),
             };
 
       var token = new JwtSecurityToken(

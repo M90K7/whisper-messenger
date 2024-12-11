@@ -1,9 +1,11 @@
-<h2 mat-dialog-title>پروفایل</h2>
+<h2 mat-dialog-title>{{ data.title || 'پروفایل' }}</h2>
 <mat-divider></mat-divider>
 <mat-dialog-content>
   <form class="d-flex flex-column gap-3 align-items-center"
         [formGroup]="profileForm"
         (ngSubmit)="updateProfile()">
+
+    @if(!isAdmin()) {
     <!-- Avatar -->
     <div class="avatar">
       <img [tabIndex]="0"
@@ -16,33 +18,100 @@
              accept="image/*"
              (change)="onAvatarChange($event)" />
     </div>
-
-    <!-- Username -->
-    <mat-form-field appearance="outline">
+    }
+    <!-- userName -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
       <mat-label>نام کاربری</mat-label>
       <input matInput
-             name="username"
-             formControlName="username" />
+             name="userName"
+             formControlName="userName" />
+      @let userName_invalid = profileForm.controls['userName'].touched && profileForm.controls['userName'].invalid;
+      @if(userName_invalid){
+      <mat-error>
+        نام کاربری اجباری میباشد.
+      </mat-error>
+      }
     </mat-form-field>
 
     <!-- Display Name -->
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline"
+                    class="w-100">
       <mat-label>نام نمایشی</mat-label>
       <input matInput
-             name="displayName"
-             formControlName="displayName" />
+             name="fullName"
+             formControlName="fullName"
+             [errorStateMatcher]="matcher" />
     </mat-form-field>
 
     <!-- Password -->
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline"
+                    class="w-100">
       <mat-label>رمـز عبور</mat-label>
       <input matInput
              type="password"
              name="password"
              formControlName="password" />
+      @let password_invalid = profileForm.controls['password'].touched && profileForm.controls['password'].invalid;
+      @if(password_invalid){
+      <mat-error>
+        رمزعبور اجباری میباشد.
+      </mat-error>
+      }
     </mat-form-field>
 
+    <!-- email -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>ایمیل</mat-label>
+      <input type="email"
+             matInput
+             formControlName="email"
+             placeholder="Ex. pat@example.com"
+             [errorStateMatcher]="matcher"
+             (focus)="profileForm.controls['email'].markAsDirty()">
+      <!-- <mat-hint>Errors appear instantly!</mat-hint> -->
+      @let email_invalid = profileForm.controls['email'].touched && profileForm.controls['email'].invalid;
+      @if(email_invalid){
+      <mat-error>
+        آدرس ایمیل به درستی وارد نشده است
+      </mat-error>
+      }
 
+      <!-- @if (email.hasError('required')) {
+        <mat-error>Email is <strong>required</strong></mat-error>
+        } -->
+    </mat-form-field>
+
+    @if(isAdmin()) {
+    <!-- role -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>نقـش سامانه</mat-label>
+      <mat-select [(value)]="profileForm.controls['role'].value">
+        <mat-option value="admin">مدیر</mat-option>
+        <mat-option value="operator">اپراتور</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- uptimeMinutes -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>زمان حضور فعال</mat-label>
+      <span matTextPrefix>دقیقه</span>
+      <input matInput
+             type="number"
+             name="uptimeMinutes"
+             formControlName="uptimeMinutes"
+             [errorStateMatcher]="matcher" />
+      @let uptimeMinutes_invalid = profileForm.controls['uptimeMinutes'].touched && profileForm.controls['uptimeMinutes'].invalid;
+      @if(uptimeMinutes_invalid){
+      <mat-error>
+        مدت زمان نشست کاربر صحیح نمی‌باشد.
+      </mat-error>
+      }
+    </mat-form-field>
+    }
   </form>
 </mat-dialog-content>
 <mat-divider></mat-divider>

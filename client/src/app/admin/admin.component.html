@@ -1,5 +1,11 @@
-<mat-tab-group>
-  <mat-tab label="First"> Content 1 </mat-tab>
-  <mat-tab label="Second"> Content 2 </mat-tab>
-  <mat-tab label="Third"> Content 3 </mat-tab>
-</mat-tab-group>
+<mat-toolbar class="justify-content-start gap-2">
+  <a mat-raised-button
+     routerLink="users"
+     routerLinkActive="btn-active">کاربران</a>
+  <a mat-raised-button
+     routerLink="settings"
+     routerLinkActive="btn-active">تنظیمات</a>
+</mat-toolbar>
+<div class="mx-2 h-100 my-2">
+  <router-outlet></router-outlet>
+</div>

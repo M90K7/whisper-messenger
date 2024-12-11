@@ -53,6 +53,17 @@ builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Seed data
@@ -63,9 +74,9 @@ using (var scope = app.Services.CreateScope())
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
     // Seed roles
-    if (!await roleManager.RoleExistsAsync("Admin"))
+    if (!await roleManager.RoleExistsAsync("admin"))
     {
-        await roleManager.CreateAsync(new IdentityRole<int> { Name = "Admin" });
+        await roleManager.CreateAsync(new IdentityRole<int> { Name = "admin" });
     }
 
     // Seed admin user
@@ -75,10 +86,11 @@ using (var scope = app.Services.CreateScope())
         {
             UserName = "admin",
             Email = "admin@example.com",
-            FullName = "Default Admin"
+            FullName = "Default Admin",
+            SecurityStamp = Guid.NewGuid().ToString(),
         };
-        await userManager.CreateAsync(admin, "AdminPassword123!");
-        await userManager.AddToRoleAsync(admin, "Admin");
+        await userManager.CreateAsync(admin, "Admin@123");
+        await userManager.AddToRoleAsync(admin, "admin");
     }
 }
 
@@ -88,6 +100,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowAllOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();

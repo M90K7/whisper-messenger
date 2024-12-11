@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace whisper_messenger.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241201091456_InitialCreate")]
+    [Migration("20241211145321_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

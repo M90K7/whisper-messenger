@@ -71,6 +71,10 @@ html {
     )
   );
 }
+.btn-active {
+  background: var(--mat-sys-primary) !important;
+  color: var(--mat-sys-inverse-on-surface) !important;
+}
 
 * {
   margin: 0;
@@ -106,11 +110,6 @@ body::-webkit-scrollbar {
 body::-webkit-scrollbar-thumb {
   border-radius: 5px;
   background: rgba(0, 0, 0, 0.2);
-}
-
-*::selection {
-  // background: mat.$azure-palette;
-  color: #fff;
 }
 
 .toast-container {

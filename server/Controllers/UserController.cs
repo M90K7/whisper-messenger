@@ -6,126 +6,121 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers
 {
-  [Authorize(Roles = "Admin")]
-  [ApiController]
-  [Route("api/[controller]")]
-  public class UserController : ControllerBase
-  {
-    private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole<int>> _roleManager;
-
-    public UserController(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
-    {
-      _userManager = userManager;
-      _roleManager = roleManager;
-    }
-
-    [HttpPost("create")]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
-    {
-      var user = new User
-      {
-        UserName = request.Username,
-        Email = request.Email,
-        FullName = request.FullName,
-        Avatar = request.Avatar,
-        UptimeMinutes = request.UptimeMinutes,
-      };
-
-      var result = await _userManager.CreateAsync(user, request.Password);
-      if (!result.Succeeded)
-      {
-        return BadRequest(result.Errors);
-      }
-
-      await _userManager.AddToRoleAsync(user, request.Role);
-      return Ok(user);
-    }
-
-    [HttpPut("{id}/edit")]
-    public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
-    {
-      var user = await _userManager.FindByIdAsync(id.ToString());
-      if (user == null) return NotFound();
-
-      user.FullName = request.FullName;
-      user.Avatar = request.Avatar;
-      user.Email = request.Email;
-
-      var result = await _userManager.UpdateAsync(user);
-      if (!result.Succeeded) return BadRequest(result.Errors);
-
-      return Ok(user);
-    }
-
-    [HttpGet("list")]
-    public async Task<IActionResult> ListUsers()
-    {
-      var users = await _userManager.Users.Select(user => new
-      {
-        user.Id,
-        user.UserName,
-        user.FullName,
-        user.Avatar,
-        Online = ChatHub.GetOnlineUsers().Contains(user.Id.ToString())
-      }).ToListAsync();
-
-      var currentUserId = User.Identity?.Name;
-      users = users.Where(u => u.Id.ToString() != currentUserId).ToList();
-
-      return Ok(users);
-    }
-
-    [HttpPut("update-profile")]
     [Authorize]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
     {
-      var userId = int.Parse(User.Identity.Name);
-      var user = await _userManager.FindByIdAsync(userId.ToString());
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
-      if (user == null) return NotFound();
+        public UserController(
+            UserManager<User> userManager,
+            RoleManager<IdentityRole<int>> roleManager
+        )
+        {
+            _userManager = userManager;
+            _roleManager = roleManager;
+        }
 
-      // Update user properties
-      user.UserName = request.Username ?? user.UserName;
-      user.FullName = request.DisplayName ?? user.FullName;
+        [HttpPut("{id}/edit")]
+        public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return NotFound();
 
-      if (!string.IsNullOrEmpty(request.Password))
-      {
-        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.Password);
-        if (!result.Succeeded) return BadRequest(result.Errors);
-      }
+            user.FullName = request.FullName;
+            user.Avatar = request.Avatar;
+            user.Email = request.Email;
 
-      // Save updated user
-      var updateResult = await _userManager.UpdateAsync(user);
-      if (!updateResult.Succeeded) return BadRequest(updateResult.Errors);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
 
-      return Ok(new { message = "Profile updated successfully!" });
+            return Ok(user);
+        }
+
+        [HttpGet("list")]
+        public async Task<IActionResult> ListUsers()
+        {
+            var users = await _userManager.Users
+                .Select(
+                    user =>
+                        new
+                        {
+                            user.Id,
+                            user.UserName,
+                            user.FullName,
+                            user.Avatar,
+                            Online = ChatHub.GetOnlineUsers().Contains(user.Id.ToString())
+                        }
+                )
+                .ToListAsync();
+
+            var currentUserId = User.Identity?.Name;
+            users = users.Where(u => u.Id.ToString() != currentUserId).ToList();
+
+            return Ok(users);
+        }
+
+        [HttpPut("update")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            var userId = int.Parse(User.Identity.Name);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+                return NotFound();
+
+            // Update user properties
+            user.UserName = request.Username ?? user.UserName;
+            user.FullName = request.DisplayName ?? user.FullName;
+
+            if (!string.IsNullOrEmpty(request.Password))
+            {
+                var result = await _userManager.ChangePasswordAsync(
+                    user,
+                    request.CurrentPassword,
+                    request.Password
+                );
+                if (!result.Succeeded)
+                    return BadRequest(result.Errors);
+            }
+
+            // Save updated user
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+                return BadRequest(updateResult.Errors);
+
+            return Ok(new { message = "Profile updated successfully!" });
+        }
     }
-  }
 
-  public class CreateUserRequest
-  {
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public string FullName { get; set; }
-    public string Password { get; set; }
-    public string Role { get; set; }
-    public string? Avatar { get; set; }
-    public int UptimeMinutes { get; set; }
-  }
+    public class CreateUserRequest
+    {
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string FullName { get; set; }
+        public string Password { get; set; }
+        public string Role { get; set; }
+        public string Avatar { get; set; }
+        public int UptimeMinutes { get; set; }
+    }
 
-  public class EditProfileRequest
-  {
-    public string FullName { get; set; }
-    public string Email { get; set; }
-    public string? Avatar { get; set; }
-  }
+    public class EditProfileRequest
+    {
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string Avatar { get; set; }
+    }
 
-  public class UpdateProfileRequest
-  {
-    public string? Username { get; set; }
-    public string? DisplayName { get; set; }
-    public string? Password { get; set; }
-    public string? CurrentPassword { get; set; } // For password updates
-  }
+    public class UpdateProfileRequest
+    {
+        public string Username { get; set; }
+        public string DisplayName { get; set; }
+        public string Password { get; set; }
+        public string CurrentPassword { get; set; } // For password updates
+    }
 }

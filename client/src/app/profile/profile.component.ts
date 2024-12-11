@@ -1,14 +1,22 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from "@angular/forms";
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 
 import { MatCardModule } from "@angular/material/card";
-import { MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from "@angular/material/dialog";
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
 
-import { UserService } from "@app/services";
+import { AuthService, UserService } from "@app/services";
+import { UserDto } from "@app/models";
+import { ErrorStateMatcher } from "@angular/material/core";
+
+interface ProfileData {
+  title: string;
+  user: UserDto;
+}
 
 @Component({
   selector: 'app-profile',
@@ -19,33 +27,64 @@ import { UserService } from "@app/services";
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose,
-    MatDividerModule
+    MatDividerModule,
+    MatSelectModule,
+    MatDialogModule,// MatDialogContent, MatDialogActions, MatDialogClose,
   ],
-  standalone: true,
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ProfileComponent>);
+
+  readonly data = inject<ProfileData>(MAT_DIALOG_DATA);
 
   profileForm: FormGroup;
   defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
-  previewAvatar: string | ArrayBuffer | null = null;
+  previewAvatar?: string | ArrayBuffer | null;
 
-  constructor(private fb: FormBuilder, private userService: UserService) {
+  isAdmin = signal(false);
+
+  matcher = new MyErrorStateMatcher();
+  constructor(private readonly fb: FormBuilder, private readonly userService: UserService, private readonly authSvc: AuthService) {
     this.profileForm = this.fb.group({
-      username: [''],
-      displayName: [''],
-      password: [''],
+      userName: ['', [Validators.required]],
+      fullName: ['', []],
+      password: ['', [Validators.required]],
+      email: ['', [Validators.email]],
+      role: ['operator', []],
+      uptimeMinutes: [60, [Validators.required, Validators.min(5), Validators.max(60 * 48)]],
     });
+
+    this.isAdmin.set(this.authSvc.isAdmin());
   }
 
+
   ngOnInit(): void {
-    this.loadProfile();
+    // this.loadProfile();
+
+    if (this.data.user) {
+      this.profileForm.patchValue({
+        userName: this.data.user.userName || '',
+        fullName: this.data.user.fullName || '',
+        email: this.data.user.email,
+        role: this.data.user.role,
+        uptimeMinutes: this.data.user.uptimeMinutes
+      });
+      this.previewAvatar = this.data.user.avatar;
+    }
   }
 
   save() {
+    this.profileForm.markAllAsTouched();
+    this.profileForm.updateValueAndValidity({ onlySelf: true, emitEvent: true });
+
+    if (this.data.user?.id) {
+      this.userService.update({ id: this.data.user.id, ...this.profileForm.value });
+    } else {
+      this.userService.create(this.profileForm.value);
+    }
+
     this.dialogRef.close();
   }
 
@@ -72,10 +111,17 @@ export class ProfileComponent {
 
   // Update profile
   updateProfile() {
-
     const profileData = this.profileForm.value;
-    this.userService.updateProfile(profileData).subscribe(() => {
+    this.userService.update(profileData).subscribe(() => {
       alert('Profile updated successfully!');
     });
+  }
+}
+
+/** Error when invalid control is dirty, touched, or submitted. */
+export class MyErrorStateMatcher implements ErrorStateMatcher {
+  isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+    const isSubmitted = form && form.submitted;
+    return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
   }
 }
