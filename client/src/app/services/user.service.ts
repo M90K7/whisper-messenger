@@ -11,8 +11,12 @@ export class UserService {
 
   constructor(private http: HttpClient, readonly urlSvc: UrlService, readonly authSvc: AuthService) { }
 
+  getAdminUsers() {
+    return this.http.get<UserDto[]>(this.urlSvc.user.admin.list);
+  }
+
   getUsers() {
-    return this.http.get<UserDto[]>('/api/user/list');
+    return this.http.get<UserDto[]>(this.urlSvc.user.list);
   }
 
   // Get the current user's profile

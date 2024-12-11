@@ -12,10 +12,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { AuthService, UserService } from "@app/services";
 import { UserDto } from "@app/models";
 import { ErrorStateMatcher } from "@angular/material/core";
+import { ActivatedRoute, Router } from "@angular/router";
 
-interface ProfileData {
+export interface ProfileArgs {
   title: string;
   user: UserDto;
+  isAdmin: boolean;
 }
 
 @Component({
@@ -36,8 +38,9 @@ interface ProfileData {
 })
 export class ProfileComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<ProfileComponent>);
+  readonly router = inject(Router);
 
-  readonly data = inject<ProfileData>(MAT_DIALOG_DATA);
+  readonly data = inject<ProfileArgs>(MAT_DIALOG_DATA);
 
   profileForm: FormGroup;
   defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
@@ -46,7 +49,10 @@ export class ProfileComponent implements OnInit {
   isAdmin = signal(false);
 
   matcher = new MyErrorStateMatcher();
-  constructor(private readonly fb: FormBuilder, private readonly userService: UserService, private readonly authSvc: AuthService) {
+  constructor(private readonly fb: FormBuilder,
+    private readonly userService: UserService,
+    private readonly authSvc: AuthService
+  ) {
     this.profileForm = this.fb.group({
       userName: ['', [Validators.required]],
       fullName: ['', []],
@@ -55,14 +61,11 @@ export class ProfileComponent implements OnInit {
       role: ['operator', []],
       uptimeMinutes: [60, [Validators.required, Validators.min(5), Validators.max(60 * 48)]],
     });
-
-    this.isAdmin.set(this.authSvc.isAdmin());
   }
 
 
   ngOnInit(): void {
     // this.loadProfile();
-
     if (this.data.user) {
       this.profileForm.patchValue({
         userName: this.data.user.userName || '',
@@ -73,6 +76,7 @@ export class ProfileComponent implements OnInit {
       });
       this.previewAvatar = this.data.user.avatar;
     }
+    this.isAdmin.set(this.data.isAdmin || false);
   }
 
   save() {

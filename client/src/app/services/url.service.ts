@@ -5,9 +5,9 @@ import { Injectable } from '@angular/core';
 })
 export class UrlService {
 
-  baseUrl = "http://localhost:5000/api";
+  baseUrl = "https://localhost:5000/api";
 
-  baseUserUrl = this.baseUrl + "/api/user";
+  baseUserUrl = this.baseUrl + "/user";
 
   auth = {
     login: this.baseUrl + "/auth/login"

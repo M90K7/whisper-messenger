@@ -55,8 +55,12 @@ export class AuthService {
     return this.model;
   }
 
-  private getToken(): string | null {
-    return localStorage.getItem(this.TokenKey);
+  getToken(): AuthDto | undefined {
+    const token = localStorage.getItem(this.TokenKey);
+    if (token && token.length > 10) {
+      return JSON.parse(token);
+    }
+    return undefined;
   }
 
   // Decode the JWT manually
@@ -67,7 +71,7 @@ export class AuthService {
     }
 
     try {
-      const payload = token.split('.')[1];
+      const payload = token.token.split('.')[1];
       const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
       const model = JSON.parse(decodedPayload);
       for (const key of Object.keys(model)) {

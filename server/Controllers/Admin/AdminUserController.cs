@@ -1,4 +1,5 @@
 using ChatApp.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers.Admin;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [ApiController]
 [Route("api/user/admin")]
 public class AdminUserController : ControllerBase
@@ -45,7 +46,7 @@ public class AdminUserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPut("{id}/edit")]
+    [HttpPut("edit/{id}")]
     public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
@@ -63,20 +64,25 @@ public class AdminUserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet("list")]
+    [HttpGet]
     public async Task<IActionResult> ListUsers()
     {
-        var users = await _userManager.Users.AsNoTracking().Select((user) => new
-        {
-            User = user,
-            role = _userManager.GetRolesAsync(user).Result.ToArray()
-        }
-        ).ToListAsync();
+        var users = await _userManager.Users
+            .AsNoTracking()
+            .Select(
+                (user) =>
+                    new
+                    {
+                        User = user,
+                        role = _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()
+                    }
+            )
+            .ToListAsync();
 
         return Ok(users);
     }
 
-    [HttpPut("update")]
+    [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         var userId = int.Parse(User.Identity.Name);

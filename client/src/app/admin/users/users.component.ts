@@ -6,7 +6,7 @@ import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
 
 import { UserService } from "@app/services/user.service";
-import { ProfileComponent } from "@app/profile/profile.component";
+import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
 import { catchError, of } from "rxjs";
 import { UserDto } from "@app/models";
 
@@ -23,15 +23,16 @@ import { UserDto } from "@app/models";
 })
 export class UsersComponent {
   readonly dialog = inject(MatDialog);
-  users$ = toSignal(inject(UserService).getUsers().pipe(
+  users$ = toSignal(inject(UserService).getAdminUsers().pipe(
     catchError(() => of([]))
   ));
 
   addUser(user?: UserDto) {
     const dialogRef = this.dialog.open(ProfileComponent, {
-      data: {
+      data: <ProfileArgs>{
         title: "ایجاد کاربر",
-        user
+        user,
+        isAdmin: true
       },
       width: "450px",
       minWidth: "380px",
