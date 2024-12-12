@@ -27,9 +27,14 @@ public class AdminUserController : ControllerBase
     [HttpPost()]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
+        if (!await _roleManager.RoleExistsAsync(request.Role))
+        {
+            return BadRequest("Role not found");
+        }
+
         var user = new User
         {
-            UserName = request.Username,
+            UserName = request.UserName,
             Email = request.Email,
             FullName = request.FullName,
             Avatar = request.Avatar,
@@ -46,60 +51,49 @@ public class AdminUserController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPut("edit/{id}")]
-    public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(id.ToString());
-        if (user == null)
-            return NotFound();
-
-        user.FullName = request.FullName;
-        user.Avatar = request.Avatar;
-        user.Email = request.Email;
-
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        return Ok(user);
-    }
-
     [HttpGet]
     public async Task<IActionResult> ListUsers()
     {
         var users = await _userManager.Users
             .AsNoTracking()
-            .Select(
-                (user) =>
-                    new
-                    {
-                        User = user,
-                        role = _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()
-                    }
-            )
+            .Select((user) => UserDto.FromUser(user, _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()))
             .ToListAsync();
 
         return Ok(users);
     }
 
     [HttpPut]
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    public async Task<IActionResult> UpdateProfile([FromBody] CreateUserRequest request)
     {
-        var userId = int.Parse(User.Identity.Name);
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(request.Id.ToString());
 
         if (user == null)
             return NotFound();
 
+        if (!await _roleManager.RoleExistsAsync(request.Role))
+        {
+            return BadRequest("Role not found");
+        }
+
+        if (!await _userManager.IsInRoleAsync(user, request.Role))
+        {
+            var roleResult = await _userManager.AddToRoleAsync(user, request.Role);
+            if (!roleResult.Succeeded)
+                return BadRequest(roleResult.Errors);
+        }
+
         // Update user properties
-        user.UserName = request.Username ?? user.UserName;
-        user.FullName = request.DisplayName ?? user.FullName;
+        user.UserName = request.UserName ?? user.UserName;
+        user.FullName = request.FullName ?? user.FullName;
+        user.Email = request.Email ?? user.Email;
+        user.UptimeMinutes = request.UptimeMinutes;
 
         if (!string.IsNullOrEmpty(request.Password))
         {
-            var result = await _userManager.ChangePasswordAsync(
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(
                 user,
-                request.CurrentPassword,
+                token,
                 request.Password
             );
             if (!result.Succeeded)
@@ -111,6 +105,20 @@ public class AdminUserController : ControllerBase
         if (!updateResult.Succeeded)
             return BadRequest(updateResult.Errors);
 
-        return Ok(new { message = "Profile updated successfully!" });
+        return Ok(UserDto.FromUser(user, string.IsNullOrEmpty(request.Role) ? _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault() : request.Role));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] int id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null)
+        {
+            return BadRequest("");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+
+        return Ok(result.Succeeded);
     }
 }

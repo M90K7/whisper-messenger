@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "npm run start:ssl",
+    "start": "npm run start:ssl-dotnet",
     "start:ssl": "ng serve --port 5001 --ssl",
     "start:noSsl": "ng serve --port 5001",
-    "start:default": "ng serve --port 44434 --ssl --ssl-cert \"$HOME/.aspnet/https/${npm_package_name}.pem\" --ssl-key \"$HOME/.aspnet/https/${npm_package_name}.key\"",
+    "start:ssl-dotnet": "ng serve --port 5001 --ssl --ssl-cert \"%APPDATA%\\ASP.NET\\https\\whisper_messenger.pem\" --ssl-key \"%APPDATA%\\ASP.NET\\https\\whisper_messenger.key\"",
     "build": "ng build",
     "build:ssr": "ng run whisper_messenger:server:dev",
     "watch": "ng build --watch --configuration development",

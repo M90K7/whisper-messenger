@@ -1,17 +1,39 @@
 <button mat-raised-button
-        class="add-user d-flex align-items-center"
+        class="user-card add-user d-flex align-items-center"
         (click)="addUser()">
   <mat-icon>add</mat-icon>
   <span>جدیـد</span>
 </button>
-
 @for (user of users$(); track $index) {
-<div class="user">
-  <div>
-    <img [src]="user.avatar">
-    <span>{{user.userName}}</span>
-  </div>
-  <div>{{user.fullName}}</div>
-  <div>{{user.role}}</div>
-</div>
+<mat-card class="user-card d-flex flex-column gap-3 "
+          appearance="outlined">
+  <mat-card-header>
+    <img mat-card-avatar
+         [src]="user.avatar"
+         onerror="this.src = '/img/default-profile.svg'">
+    <mat-card-title>{{user.userName}}</mat-card-title>
+    <mat-card-subtitle>{{user.fullName}}</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content class="d-flex flex-column gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span>نقش: </span>
+      <span>
+        {{user.role}}
+      </span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span>ایمیل: </span>
+      <span>
+        {{user.email}}
+      </span>
+    </div>
+  </mat-card-content>
+  <mat-card-actions class="justify-content-end gap-2">
+    <button mat-raised-button
+            (click)="addUser(user)">ویرایش</button>
+    <button mat-button
+            class="error"
+            (click)="deleteUser(user, $index)">حـذف</button>
+  </mat-card-actions>
+</mat-card>
 }

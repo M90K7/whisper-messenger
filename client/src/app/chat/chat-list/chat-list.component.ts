@@ -1,5 +1,5 @@
 import { AsyncPipe, } from "@angular/common";
-import { Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 
 import { MatListModule } from "@angular/material/list";
@@ -13,28 +13,23 @@ import { UserDto } from "@app/models";
   standalone: true,
   templateUrl: './chat-list.component.html',
   styleUrl: './chat-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChatListComponent {
 
-  users: Partial<UserDto>[] = [
-    { fullName: "مسلم اکبری" },
-    { fullName: "علی اصغری" },
-    { fullName: "رضا اکبری" },
-    { fullName: "محمد اکبری" },
-    { fullName: "جواد اکبری" },
-  ];
+  users = signal<UserDto[]>([], { equal: (a, b) => a === b });
 
   userSelected = output<UserDto>();
 
   userSelected$ = outputToObservable(this.userSelected);
 
   constructor(private userService: UserService) {
-    // this.loadUsers();
+    this.loadUsers();
   }
 
   loadUsers() {
     this.userService.getUsers().subscribe(users => {
-      this.users = users;
+      this.users.set(users);
     });
   }
 

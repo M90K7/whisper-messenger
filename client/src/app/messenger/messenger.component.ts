@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { MatIconModule } from '@angular/material/icon';
@@ -8,8 +8,10 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { ProfileComponent } from "@app/profile/profile.component";
+import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
 import { AuthService } from "@app/services";
+import { UserDto } from "@app/models";
+import { equal } from "assert";
 
 @Component({
   selector: 'app-messenger',
@@ -32,15 +34,22 @@ export class MessengerComponent {
   readonly authSvc = inject(AuthService);
   readonly routerSvc = inject(Router);
 
+  user = signal<UserDto>(this.authSvc.getUser());
+
   openDialog(): void {
     const dialogRef = this.dialog.open(ProfileComponent, {
 
-      data: {},
+      data: <ProfileArgs>{
+        isAdmin: false,
+        user: this.user()
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
+    dialogRef.componentInstance.ngOnInit();
 
+    dialogRef.afterClosed().subscribe((user: UserDto) => {
+      if (user !== undefined) {
+        this.user.update(u => ({ ...u, fullName: user.fullName, userName: user.userName, email: user.email }));
       }
     });
   }

@@ -1,18 +1,19 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, Validators } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
 
+import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarConfig, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AuthService, UserService } from "@app/services";
-import { UserDto } from "@app/models";
+import { snackError, snackSuccess, UserDto } from "@app/models";
 import { ErrorStateMatcher } from "@angular/material/core";
-import { ActivatedRoute, Router } from "@angular/router";
+import { Router } from "@angular/router";
 
 export interface ProfileArgs {
   title: string;
@@ -32,6 +33,7 @@ export interface ProfileArgs {
     MatDividerModule,
     MatSelectModule,
     MatDialogModule,// MatDialogContent, MatDialogActions, MatDialogClose,
+    MatSnackBarModule
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss'
@@ -41,7 +43,7 @@ export class ProfileComponent implements OnInit {
   readonly router = inject(Router);
 
   readonly data = inject<ProfileArgs>(MAT_DIALOG_DATA);
-
+  readonly _snackBar = inject(MatSnackBar);
   profileForm: FormGroup;
   defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
   previewAvatar?: string | ArrayBuffer | null;
@@ -83,13 +85,38 @@ export class ProfileComponent implements OnInit {
     this.profileForm.markAllAsTouched();
     this.profileForm.updateValueAndValidity({ onlySelf: true, emitEvent: true });
 
+
     if (this.data.user?.id) {
-      this.userService.update({ id: this.data.user.id, ...this.profileForm.value });
+      this.userService.update({ id: this.data.user.id, ...this.profileForm.value }, this.isAdmin()).subscribe(
+        {
+          next: res => {
+            if (res) {
+              this._snackBar.open("ویرایش با موفقیت انجام شد.", "", snackSuccess);
+            }
+            this.dialogRef.close(res);
+          },
+          error: () => {
+            this._snackBar.open("خطا در انجام عملیات، لطفا مجدد سعی نمایید", "", snackError);
+          }
+        }
+      );
     } else {
-      this.userService.create(this.profileForm.value);
+      this.userService.create(this.profileForm.value).subscribe(
+        {
+          next: res => {
+            if (res) {
+              this._snackBar.open("کاربر با موفقیت افزوده شد.", "", snackSuccess);
+            }
+            this.dialogRef.close(res);
+          },
+          error: () => {
+            this._snackBar.open("خطا در انجام عملیات، لطفا مجدد سعی نمایید", "", snackError);
+          }
+        }
+      );
     }
 
-    this.dialogRef.close();
+
   }
 
   // Load current user profile

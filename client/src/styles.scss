@@ -71,9 +71,37 @@ html {
     )
   );
 }
-.btn-active {
+
+.error {
+  background: var(--mat-sys-error) !important;
+  color: var(--mat-sys-error-container) !important;
+
+  &.mat-mdc-button {
+    background: inherit !important;
+    color: var(--mat-sys-error) !important;
+    &:hover {
+      background: var(--mat-sys-error-container) !important;
+    }
+  }
+}
+.primary {
   background: var(--mat-sys-primary) !important;
   color: var(--mat-sys-inverse-on-surface) !important;
+}
+
+.btn-active {
+  @extend .primary;
+}
+
+.snack-error {
+  & > div {
+    @extend .error;
+  }
+}
+.snack-primary {
+  & > div {
+    @extend .primary;
+  }
 }
 
 * {

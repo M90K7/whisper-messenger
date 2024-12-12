@@ -2,6 +2,7 @@ using ChatApp.Data;
 using ChatApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers
@@ -12,10 +13,14 @@ namespace ChatApp.Controllers
   public class ChatController : ControllerBase
   {
     private readonly AppDbContext _context;
+    private readonly IHubContext<ChatHub, IChatClient> _chatHubSvc;
+    private readonly OnlineUserService onlineUserSvc;
 
-    public ChatController(AppDbContext context)
+    public ChatController(AppDbContext context, IHubContext<ChatHub, IChatClient> chatHubSvc, OnlineUserService onlineUserSvc)
     {
       _context = context;
+      _chatHubSvc = chatHubSvc;
+      this.onlineUserSvc = onlineUserSvc;
     }
 
     [HttpPost("send")]
@@ -23,7 +28,8 @@ namespace ChatApp.Controllers
     {
       _context.Messages.Add(message);
       await _context.SaveChangesAsync();
-      return Ok(message);
+      var res = await onlineUserSvc.SendMessageAsync(_chatHubSvc, message);
+      return Ok(new ConfirmDto { MessageId = message.Id, ReceiverId = message.ReceiverId });
     }
 
     [HttpGet("{userId}")]

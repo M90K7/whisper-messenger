@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf } from "@angular/common";
-import { Component, OnInit, ViewChild, ElementRef, input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, input, inject } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
 import { MatIconModule } from "@angular/material/icon";
@@ -8,8 +8,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 
-import { ChatService, FileService } from "@app/services";
-import { UserDto } from "@app/models";
+import { AuthService, ChatService, FileService } from "@app/services";
+import { MessageDto, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
 
 @Component({
@@ -32,6 +32,9 @@ import { ChatRoomHeaderComponent } from "./chat-room-header";
 })
 export class ChatRoomComponent implements OnInit {
   readonly selectedUser = input.required<UserDto>(); // Receiver's info
+
+  readonly _authSvc = inject(AuthService);
+
   @ViewChild('messageList') messageList!: ElementRef;
 
   messages: any[] = [];
@@ -63,16 +66,14 @@ export class ChatRoomComponent implements OnInit {
   sendMessage(): void {
     if (!this.newMessage.trim()) return;
 
-    const messageData: any = {
-      senderId: this.currentUserId,
+    const messageData: MessageDto = {
+      senderId: this._authSvc.getUser().id,
       receiverId: this.selectedUser().id,
       content: this.newMessage,
     };
 
-
     // this.chatService.sendMessage(messageData).subscribe((newMessage) => {
     var newMessage = messageData;
-    newMessage.timestamp = Date.now();
     this.messages.unshift({ ...newMessage, isSent: true });
     this.newMessage = '';
     this.scrollToBottom();

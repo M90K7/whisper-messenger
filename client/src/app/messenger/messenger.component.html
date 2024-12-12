@@ -12,10 +12,20 @@
             routerLink="admin">
       <mat-icon>admin_panel_settings</mat-icon>
     </button>
-    <button mat-icon-button
-            matTooltip="تنظیمات"
+
+    <button style="height: 48px;"
+            mat-raised-button
+            matTooltip="پروفایل"
             (click)="openDialog()">
-      <mat-icon>account_circle</mat-icon>
+      <!-- <mat-icon>account_circle</mat-icon> -->
+      <div class="d-flex align-items-center gap-2">
+        <img src="/profiles/{{this.user().id}}.png"
+             width="35"
+             alt=""
+             onerror="this.src = '/img/default-profile.svg'">
+        <span>{{ this.user().fullName || this.user().userName }}</span>
+
+      </div>
     </button>
     <mat-divider style="height: 20px;"
                  [vertical]="true"></mat-divider>

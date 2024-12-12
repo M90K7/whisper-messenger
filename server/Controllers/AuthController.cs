@@ -45,12 +45,13 @@ namespace ChatApp.Controllers
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(
                     ClaimTypes.Role,
                     string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())

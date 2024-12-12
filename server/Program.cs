@@ -25,7 +25,7 @@ builder.Services
         x =>
         {
             x.RequireHttpsMetadata = false;
-            x.SaveToken = false;
+            x.SaveToken = true;
             // options.AutomaticRefreshInterval = options.
             x.TokenValidationParameters = new TokenValidationParameters
             {
@@ -67,10 +67,11 @@ builder.Services.AddAuthorization(
     }
 );
 builder.Services.Configure<JwtSettings>(jwtSettings);
+builder.Services.AddSingleton<OnlineUserService>();
 
 
 // Add services
-builder.Services.AddMvcCore();
+builder.Services.AddMvc();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services
@@ -129,6 +130,16 @@ using (var scope = app.Services.CreateScope())
         await roleManager.CreateAsync(new IdentityRole<int> { Name = "admin" });
     }
 
+    if (!await roleManager.RoleExistsAsync("operator"))
+    {
+        await roleManager.CreateAsync(new IdentityRole<int> { Name = "operator" });
+    }
+
+    if (!await roleManager.RoleExistsAsync("viewer"))
+    {
+        await roleManager.CreateAsync(new IdentityRole<int> { Name = "viewer" });
+    }
+
     // Seed admin user
     if (await userManager.FindByNameAsync("admin") == null)
     {
@@ -155,9 +166,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAllOrigins");
 
-
 // app.UseHttpsRedirection();
 
+app.UseStaticFiles();
 
 app.UseAuthentication();
 

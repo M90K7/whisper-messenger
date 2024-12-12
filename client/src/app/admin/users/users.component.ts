@@ -1,12 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from "@angular/core/rxjs-interop";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { MatIconModule } from "@angular/material/icon";
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { UserService } from "@app/services/user.service";
 import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
+import { UserDeleteArgs, UserDeleteDialogComponent } from "./user-delete-dialog";
 import { catchError, of } from "rxjs";
 import { UserDto } from "@app/models";
 
@@ -15,7 +18,9 @@ import { UserDto } from "@app/models";
   imports: [
     MatIconModule,
     MatButtonModule,
-    MatDialogModule
+    MatDialogModule,
+    MatCardModule,
+    MatDividerModule
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
@@ -23,9 +28,17 @@ import { UserDto } from "@app/models";
 })
 export class UsersComponent {
   readonly dialog = inject(MatDialog);
-  users$ = toSignal(inject(UserService).getAdminUsers().pipe(
-    catchError(() => of([]))
-  ));
+  users$ = signal<UserDto[]>([], { equal: (a, b) => a === b });
+
+  readonly userSvc = inject(UserService);
+
+  constructor() {
+    inject(UserService).getAdminUsers().pipe(
+      catchError(() => of([]))
+    ).subscribe(users => {
+      this.users$.set(users);
+    });
+  }
 
   addUser(user?: UserDto) {
     const dialogRef = this.dialog.open(ProfileComponent, {
@@ -41,10 +54,38 @@ export class UsersComponent {
 
     dialogRef.componentInstance.ngOnInit();
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-
+    dialogRef.afterClosed().subscribe((_user: UserDto) => {
+      if (_user !== undefined) {
+        if (user) {
+          Object.assign(user, _user);
+          this.users$.update(_users => Array.from(_users));
+        } else {
+          this.users$.update(_users => {
+            _users.push(_user);
+            return Array.from(_users);
+          });
+        }
       }
     });
+  }
+
+  deleteUser(user: UserDto, index: number) {
+    const dialogRef = this.dialog.open(UserDeleteDialogComponent, {
+      data: <UserDeleteArgs>{
+        user
+      },
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(isDel => {
+      if (isDel) {
+
+        this.users$.update(_users => {
+          _users.splice(index, 1);
+          return Array.from(_users);
+        });
+      }
+    });
+
   }
 }

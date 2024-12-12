@@ -20,6 +20,7 @@ export class UrlService {
       list: this.baseUserUrl + "/admin",
       create: this.baseUserUrl + "/admin",
       update: this.baseUserUrl + "/admin",
+      delete: this.baseUserUrl + "/admin",
     }
   };
 }

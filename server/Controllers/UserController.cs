@@ -1,4 +1,5 @@
 using ChatApp.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,76 +7,51 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/user")]
     public class UserController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly OnlineUserService _onlineUserSvc;
 
         public UserController(
             UserManager<User> userManager,
-            RoleManager<IdentityRole<int>> roleManager
+            RoleManager<IdentityRole<int>> roleManager,
+            OnlineUserService onlineUserSvc
         )
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            this._onlineUserSvc = onlineUserSvc;
         }
 
-        [HttpPut("{id}/edit")]
-        public async Task<IActionResult> EditProfile(int id, [FromBody] EditProfileRequest request)
-        {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            if (user == null)
-                return NotFound();
-
-            user.FullName = request.FullName;
-            user.Avatar = request.Avatar;
-            user.Email = request.Email;
-
-            var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
-            return Ok(user);
-        }
-
-        [HttpGet("list")]
+        [HttpGet]
         public async Task<IActionResult> ListUsers()
         {
             var users = await _userManager.Users
                 .Select(
-                    user =>
-                        new
-                        {
-                            user.Id,
-                            user.UserName,
-                            user.FullName,
-                            user.Avatar,
-                            Online = ChatHub.GetOnlineUsers().Contains(user.Id.ToString())
-                        }
+                    user => UserDto.FromUser(user, _onlineUserSvc.IsOnlineUser(user.Id.ToString()))
                 )
                 .ToListAsync();
 
-            var currentUserId = User.Identity?.Name;
-            users = users.Where(u => u.Id.ToString() != currentUserId).ToList();
+            var currentUserName = User.Identity?.Name;
+            users = users.Where(u => u.UserName.ToString() != currentUserName).ToList();
 
             return Ok(users);
         }
 
-        [HttpPut("update")]
-        [Authorize]
+        [HttpPut]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
-            var userId = int.Parse(User.Identity.Name);
-            var user = await _userManager.FindByIdAsync(userId.ToString());
+            var user = await _userManager.FindByIdAsync(request.Id.ToString());
 
             if (user == null)
                 return NotFound();
 
             // Update user properties
-            user.UserName = request.Username ?? user.UserName;
+            user.UserName = request.UserName ?? user.UserName;
             user.FullName = request.DisplayName ?? user.FullName;
 
             if (!string.IsNullOrEmpty(request.Password))
@@ -94,13 +70,14 @@ namespace ChatApp.Controllers
             if (!updateResult.Succeeded)
                 return BadRequest(updateResult.Errors);
 
-            return Ok(new { message = "Profile updated successfully!" });
+            return Ok(UserDto.FromUser(user, true));
         }
     }
 
     public class CreateUserRequest
     {
-        public string Username { get; set; }
+        public int Id { get; set; }
+        public string UserName { get; set; }
         public string Email { get; set; }
         public string FullName { get; set; }
         public string Password { get; set; }
@@ -118,8 +95,10 @@ namespace ChatApp.Controllers
 
     public class UpdateProfileRequest
     {
-        public string Username { get; set; }
+        public int Id { get; set; }
+        public string UserName { get; set; }
         public string DisplayName { get; set; }
+        public string Email { get; set; }
         public string Password { get; set; }
         public string CurrentPassword { get; set; } // For password updates
     }

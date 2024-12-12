@@ -8,19 +8,34 @@ import { AuthService } from "./services";
 import { inject } from "@angular/core";
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: '/msg', pathMatch: 'full' },
   {
-    path: "msg", component: MessengerComponent,
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [
+      (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+        const authSvc = inject(AuthService);
+        const routerSvc = inject(Router);
+
+        if (authSvc.isAuthenticated()) {
+          routerSvc.navigateByUrl("/");
+        }
+        return true;
+      }
+    ]
+  },
+  {
+    path: "msg",
+    component: MessengerComponent,
     canActivate: [
       (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
         const authSvc = inject(AuthService);
         const routerSvc = inject(Router);
 
         if (!authSvc.isAuthenticated()) {
-          routerSvc.navigateByUrl("/login");
+          return routerSvc.navigateByUrl("/login");
         }
-        return authSvc.isAuthenticated();
+        return true;
       }
     ],
     children: [

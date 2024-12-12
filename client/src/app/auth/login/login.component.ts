@@ -6,8 +6,11 @@ import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+
 import { AuthService } from "@app/services";
 import { Router } from "@angular/router";
+import { snackError } from "@app/models";
 
 @Component({
   selector: 'app-login',
@@ -19,7 +22,8 @@ import { Router } from "@angular/router";
     MatCardModule,
     MatInputModule,
     MatFormFieldModule,
-    MatButtonModule
+    MatButtonModule,
+    MatSnackBarModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -29,6 +33,8 @@ export class LoginComponent {
 
   routerSvc = inject(Router);
 
+  readonly _snackBar = inject(MatSnackBar);
+
   constructor(private fb: FormBuilder, private authService: AuthService) {
     this.loginForm = this.fb.group({
       username: ['', []],
@@ -37,8 +43,14 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    this.authService.login(this.loginForm.value).subscribe(() => {
-      this.routerSvc.navigateByUrl("/msg");
+    this.authService.login(this.loginForm.value).subscribe({
+      next: () => {
+        this.routerSvc.navigateByUrl("/msg");
+      },
+      error: (err) => {
+        console.error(err);
+        this._snackBar.open("خطا در انجام عملیات، لطفا مجدد سعی نمایید.", "", snackError);
+      }
     });
   }
 }

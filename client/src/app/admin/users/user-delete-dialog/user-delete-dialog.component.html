@@ -1,0 +1,17 @@
+<h3 mat-dialog-title>حذف کاربر</h3>
+<mat-divider></mat-divider>
+<mat-dialog-content>
+  <h6 class="px-2 py-4">
+    آیا مایل به حذف کاربر "{{data.user.fullName || data.user.userName}}" هستید؟
+  </h6>
+</mat-dialog-content>
+<mat-divider></mat-divider>
+<mat-dialog-actions class="justify-content-around">
+  <!-- Submit Button -->
+  <button mat-raised-button
+          class="error"
+          type="submit"
+          (click)="close()">حذف</button>
+  <button mat-button
+          mat-dialog-close>انصراف</button>
+</mat-dialog-actions>

@@ -1,9 +1,16 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  // align-items: flex-start;
 }
 
 .add-user {
-  width: 100px;
-  height: 100px;
+  height: auto;
   border-radius: 10px;
+}
+
+.user-card {
+  width: 250px;
+  overflow: hidden;
 }

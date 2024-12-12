@@ -25,7 +25,7 @@ export class UserService {
   }
 
   create(profileData: UserDto) {
-    return this.http.post(this.urlSvc.user.admin.create, profileData);
+    return this.http.post<UserDto>(this.urlSvc.user.admin.create, profileData);
   }
 
   private updateAdmin(profileData: Partial<UserDto>) {
@@ -33,15 +33,19 @@ export class UserService {
   }
 
   // Update the user's profile
-  update(profileData: Partial<UserDto>) {
+  update(profileData: Partial<UserDto>, isAdmin: boolean = false) {
     delete profileData.online;
 
-    if (this.authSvc.isAdmin()) {
+    if (isAdmin) {
       return this.updateAdmin(profileData);
     }
 
     delete profileData.role;
     return this.http.put(this.urlSvc.user.update, profileData);
+  }
+
+  delete(userId: number) {
+    return (this.http.delete(this.urlSvc.user.admin.delete + `/${userId}`));
   }
 
 }

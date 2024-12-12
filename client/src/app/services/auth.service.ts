@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from "rxjs";
 
-import { AuthDto, UserTokenModel } from "@app/models";
+import { AuthDto, decodeBase64Utf8, UserDto, UserTokenModel } from "@app/models";
 import { UrlService } from "./url.service";
 
 @Injectable({
@@ -55,6 +55,18 @@ export class AuthService {
     return this.model;
   }
 
+  getUser() {
+    return <UserDto>{
+      avatar: this.model.uri,
+      fullName: this.model.givenname,
+      online: true,
+      id: +this.model.sub,
+      role: this.model.role,
+      userName: this.model.name,
+      email: this.model.emailaddress
+    };
+  }
+
   getToken(): AuthDto | undefined {
     const token = localStorage.getItem(this.TokenKey);
     if (token && token.length > 10) {
@@ -72,7 +84,7 @@ export class AuthService {
 
     try {
       const payload = token.token.split('.')[1];
-      const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      const decodedPayload = decodeBase64Utf8(payload.replace(/-/g, '+').replace(/_/g, '/'));
       const model = JSON.parse(decodedPayload);
       for (const key of Object.keys(model)) {
         if (key.startsWith("http")) {
