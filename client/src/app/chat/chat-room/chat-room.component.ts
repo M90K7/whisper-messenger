@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf } from "@angular/common";
-import { Component, OnInit, ViewChild, ElementRef, input, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, input, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
 import { MatIconModule } from "@angular/material/icon";
@@ -9,15 +9,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 
 import { AuthService, ChatService, FileService } from "@app/services";
-import { MessageDto, UserDto } from "@app/models";
+import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
+import { Observable } from "rxjs";
+import { toObservable } from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-chat-room',
   standalone: true,
   imports: [
-    NgFor,
-    NgClass,
     NgIf,
     FormsModule,
     MatIconModule,
@@ -36,28 +36,35 @@ export class ChatRoomComponent implements OnInit {
   readonly _authSvc = inject(AuthService);
 
   @ViewChild('messageList') messageList!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  messages: any[] = [];
+  messages = signal<MessageDto[]>([]);
+  loading = signal(false);
+
   newMessage: string = '';
-  currentUserId: string = '123'; // Replace with actual logged-in user ID
+  userId = signal(+this._authSvc.getUser()!.id); // Replace with actual logged-in user ID
   page: number = 1;
-  loading: boolean = false;
 
-  constructor(private chatService: ChatService, private fileService: FileService) { }
-
+  constructor(private chatService: ChatService, private fileService: FileService) {
+  }
   ngOnInit(): void {
-    // this.loadChatHistory();
+    this.loadChatHistory();
   }
 
   loadChatHistory(): void {
-    if (this.loading) return;
+    if (this.loading()) return;
 
-    this.loading = true;
-    this.chatService.getChatHistory(this.selectedUser().id, this.page).subscribe((history) => {
-      this.messages = [...history.reverse(), ...this.messages];
+    this.loading.set(true);
+    this.chatService.getChatHistory(this.selectedUser().id, this.page).subscribe((messages) => {
+      for (const msg of messages) {
+        if (msg.filePath) {
+          msg.filePath = this.chatService.toCdnFile(msg.filePath);
+        }
+      }
+      this.messages.set(messages);
+      this.loading.set(false);
+
       this.page++;
-      this.loading = false;
-
       // Scroll to the bottom after loading initial history
       setTimeout(() => this.scrollToBottom(), 100);
     });
@@ -66,45 +73,61 @@ export class ChatRoomComponent implements OnInit {
   sendMessage(): void {
     if (!this.newMessage.trim()) return;
 
+    let sendObs$: Observable<ConfirmMessageDto | FileConfirmMessageDto> | undefined = undefined;
     const messageData: MessageDto = {
-      senderId: this._authSvc.getUser().id,
+      senderId: this.userId(),
       receiverId: this.selectedUser().id,
       content: this.newMessage,
+      status: 0
     };
 
-    // this.chatService.sendMessage(messageData).subscribe((newMessage) => {
-    var newMessage = messageData;
-    this.messages.unshift({ ...newMessage, isSent: true });
-    this.newMessage = '';
-    this.scrollToBottom();
-    // });
-  }
+    const file = this.getFile();
+    if (file) {
+      const form = new FormData();
+      form.append("file", file, file.name);
+      form.append("senderId", messageData.senderId!.toString());
+      form.append("receiverId", messageData.receiverId!.toString());
+      form.append("content", messageData.content!.toString());
+      sendObs$ = this.chatService.sendFile(form);
+    } else {
+      sendObs$ = this.chatService.sendMessage(messageData);
+    }
 
-  uploadFile(event: any): void {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    this.fileService.uploadFile(file).subscribe((filePath: string) => {
-      const messageData = {
-        senderId: this.currentUserId,
-        receiverId: this.selectedUser().id,
-        content: '',
-        filePath,
-      };
-
-      this.chatService.sendMessage(messageData).subscribe((newMessage) => {
-        this.messages.push({ ...newMessage, isSent: true });
-        this.scrollToBottom();
+    sendObs$?.subscribe((_newMsg) => {
+      messageData.id = _newMsg.messageId;
+      messageData.timestamp = _newMsg.timestamp;
+      if ((_newMsg as FileConfirmMessageDto).filePath) {
+        messageData.filePath = this.chatService.toCdnFile((_newMsg as FileConfirmMessageDto).filePath);
+      }
+      messageData.status = 1;
+      this.messages.update(_msgs => {
+        _msgs.push(messageData);
+        return Array.from(_msgs);
       });
+      this.newMessage = '';
+      this.clearFile();
+      this.scrollToBottom();
     });
   }
 
-  isImage(filePath: string): boolean {
-    return /\.(jpg|jpeg|png|gif)$/i.test(filePath);
+  getFile(): File | undefined {
+    const files = this.fileInput.nativeElement.files;
+    if (files == null || files.length == 0)
+      return undefined;
+
+    return files[0];
   }
 
-  isVideo(filePath: string): boolean {
-    return /\.(mp4|webm|ogg)$/i.test(filePath);
+  clearFile() {
+    this.fileInput.nativeElement.files = null;
+  }
+
+  isImage(filePath?: string): boolean {
+    return Boolean(filePath && /\.(jpg|jpeg|png|gif)$/i.test(filePath));
+  }
+
+  isVideo(filePath?: string): boolean {
+    return Boolean(filePath && /\.(mp4|webm|ogg)$/i.test(filePath));
   }
 
   formatTimestamp(timestamp: string): string {

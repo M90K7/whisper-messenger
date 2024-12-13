@@ -6,12 +6,12 @@ export interface AuthDto {
 
 
 export interface UserTokenModel {
+  sub: string; // Subject (user identifier)
+  email?: string; // Custom claim for roles
+  given_name?: string; // Custom claim for roles
+  name?: string; // Custom claim for roles
   exp?: number; // Expiration time
   iat?: number; // Issued at
-  sub: string; // Subject (user identifier)
   role?: string; // Custom claim for roles
-  givenname?: string; // Custom claim for roles
-  name?: string; // Custom claim for roles
-  uri?: string; // Custom claim for roles
-  emailaddress?: string; // Custom claim for roles
+  avatar?: string; // Custom claim for roles
 }

@@ -3,29 +3,49 @@
                         [user]="selectedUser()"></app-chat-room-header>
   <!-- <mat-divider></mat-divider> -->
   <!-- Messages List -->
-  <div class="messages"
-       #messageList>
-    <div *ngFor="let message of messages"
-         class="message"
-         [ngClass]="{ sent: message.isSent, received: !message.isSent }">
-      <div class="message-content">
-        <p *ngIf="message.content">{{ message.content }}</p>
-        <img *ngIf="isImage(message.filePath)"
-             [src]="message.filePath"
-             alt="Image" />
-        <video *ngIf="isVideo(message.filePath)"
-               [src]="message.filePath"
-               controls></video>
-        <a *ngIf="message.filePath && !isImage(message.filePath) && !isVideo(message.filePath)"
-           [href]="message.filePath"
-           download>
-          Download File
-        </a>
+  <div #messageList
+       class="message--container">
+    <div class="messages">
+      @for (message of messages(); track $index) {
+      <div class="message"
+           [class.seen-0]="message.status === 0"
+           [class.seen-1]="message.status === 1"
+           [class.seen-2]="message.status === 2"
+           [class.message--to]="message.senderId !== userId()">
+        <div class="message-content">
+          @if(message.content) {
+          <p>{{ message.content }}</p>
+          }
+          @if(isImage(message.filePath)) {
+          <img [src]="message.filePath"
+               alt="Image"
+               (error)="message.filePath = undefined" />
+          }
+          @if(isVideo(message.filePath)) {
+          <video [src]="message.filePath"
+                 controls
+                 (error)="message.filePath = undefined"></video>
+          }
+          @if(message.filePath && !isImage(message.filePath) && !isVideo(message.filePath)) {
+          <a [href]="message.filePath"
+             download>
+            Download File
+          </a>
+          }
+        </div>
+        @if(message.timestamp) {
+        <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+        }
       </div>
-      <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+      }@empty {
+      @if(loading()) {
+      <div>در حال بارگذاری ...</div>
+      }@else {
+      <div>لطفا پیام خود را بذارید.</div>
+      }
+      }
     </div>
   </div>
-
   <!-- Input Area -->
   <form (ngSubmit)="sendMessage()"
         class="ex-bg-white d-flex align-items-center gap-2 pe-2">
@@ -40,7 +60,6 @@
     </mat-form-field>
     <input type="file"
            #fileInput
-           (change)="uploadFile($event)"
            hidden />
     <button type="button"
             mat-icon-button

@@ -3,3 +3,7 @@
   display: flex;
   flex-direction: column;
 }
+
+.h-container {
+  height: calc(99vh - var(--mat-toolbar-standard-height, 64px));
+}

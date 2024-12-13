@@ -1,4 +1,6 @@
 using ChatApp.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -42,6 +44,15 @@ namespace ChatApp.Controllers
             return Ok(new { Token = token, ExpiresInMinutes = user.UptimeMinutes });
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshAsync()
+        {
+            var user = await _userManager.FindByIdAsync(User.Identity.Name);
+            var token = GenerateJwtToken(user);
+            return Ok(new { Token = token, ExpiresInMinutes = user.UptimeMinutes });
+        }
+
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
@@ -50,14 +61,18 @@ namespace ChatApp.Controllers
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                new Claim(JwtRegisteredClaimNames.GivenName, user.FullName ?? ""),
+                new Claim(JwtRegisteredClaimNames.Name, user.UserName ?? ""),
+                new Claim("role", string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())),
+                new Claim(ClaimTypes.Name, user.Id.ToString()),
+                // new Claim(ClaimTypes.Email, user.Email),
                 new Claim(
                     ClaimTypes.Role,
                     string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())
                 ),
-                new Claim(ClaimTypes.GivenName, user.FullName ?? ""),
-                new Claim(ClaimTypes.Uri, user.Avatar ?? ""),
+                // new Claim(ClaimTypes.GivenName, user.FullName ?? ""),
+                new Claim("avatar", user.Avatar ?? ""),
             };
 
             var token = new JwtSecurityToken(

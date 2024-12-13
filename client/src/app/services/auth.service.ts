@@ -12,8 +12,6 @@ export class AuthService {
 
   TokenKey = "token";
 
-  private model!: UserTokenModel;
-
   constructor(private http: HttpClient, private readonly _urlSvc: UrlService) { }
 
   login(credentials: any) {
@@ -22,6 +20,21 @@ export class AuthService {
         localStorage.setItem('token', JSON.stringify(token));
       })
     );
+  }
+
+  refresh() {
+    return this.http.post<AuthDto>(this._urlSvc.auth.refresh, {}).pipe(
+      tap(token => {
+        localStorage.setItem('token', JSON.stringify(token));
+      })
+    );
+  }
+
+  avatarSrc(url?: string) {
+    if (url) {
+      return this._urlSvc.cdn.profiles + '/' + url + "?t=" + Date.now();
+    }
+    return undefined;
   }
 
   logout() {
@@ -38,7 +51,6 @@ export class AuthService {
     if (model == null) {
       return false;
     }
-    this.model = model;
 
     if (this.isTokenExpired()) {
       return false;
@@ -48,22 +60,22 @@ export class AuthService {
   }
 
   isAdmin() {
-    return this.model?.role === "admin";
-  }
-
-  getModel() {
-    return this.model;
+    return this.getUser()?.role === "admin";
   }
 
   getUser() {
+    const model = this.decodeToken();
+    if (!model) {
+      return undefined;
+    }
     return <UserDto>{
-      avatar: this.model.uri,
-      fullName: this.model.givenname,
+      avatar: this.avatarSrc(model.avatar),
+      fullName: model.given_name,
       online: true,
-      id: +this.model.sub,
-      role: this.model.role,
-      userName: this.model.name,
-      email: this.model.emailaddress
+      id: +model.sub,
+      role: model.role,
+      userName: model.name,
+      email: model.email
     };
   }
 
@@ -86,14 +98,14 @@ export class AuthService {
       const payload = token.token.split('.')[1];
       const decodedPayload = decodeBase64Utf8(payload.replace(/-/g, '+').replace(/_/g, '/'));
       const model = JSON.parse(decodedPayload);
-      for (const key of Object.keys(model)) {
-        if (key.startsWith("http")) {
-          const _keys = key.split("/");
-          const _key = _keys[_keys.length - 1];
-          if (_key)
-            model[_key] = model[key];
-        }
-      }
+      // for (const key of Object.keys(model)) {
+      //   if (key.startsWith("http")) {
+      //     const _keys = key.split("/");
+      //     const _key = _keys[_keys.length - 1];
+      //     if (_key)
+      //       model[_key] = model[key];
+      //   }
+      // }
       return model;
     } catch (error) {
       console.error('Error decoding JWT:', error);
@@ -102,7 +114,7 @@ export class AuthService {
   }
 
   private isTokenExpired(): boolean {
-    const decodedToken = this.model;
+    const decodedToken = this.decodeToken();
     if (!decodedToken || !decodedToken.exp) {
       return true;
     }

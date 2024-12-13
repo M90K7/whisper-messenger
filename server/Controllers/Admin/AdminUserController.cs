@@ -56,7 +56,13 @@ public class AdminUserController : ControllerBase
     {
         var users = await _userManager.Users
             .AsNoTracking()
-            .Select((user) => UserDto.FromUser(user, _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()))
+            .Select(
+                (user) =>
+                    UserDto.FromUser(
+                        user,
+                        _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()
+                    )
+            )
             .ToListAsync();
 
         return Ok(users);
@@ -91,11 +97,7 @@ public class AdminUserController : ControllerBase
         if (!string.IsNullOrEmpty(request.Password))
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(
-                user,
-                token,
-                request.Password
-            );
+            var result = await _userManager.ResetPasswordAsync(user, token, request.Password);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
         }
@@ -105,7 +107,14 @@ public class AdminUserController : ControllerBase
         if (!updateResult.Succeeded)
             return BadRequest(updateResult.Errors);
 
-        return Ok(UserDto.FromUser(user, string.IsNullOrEmpty(request.Role) ? _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault() : request.Role));
+        return Ok(
+            UserDto.FromUser(
+                user,
+                string.IsNullOrEmpty(request.Role)
+                  ? _userManager.GetRolesAsync(user).Result.ToArray().FirstOrDefault()
+                  : request.Role
+            )
+        );
     }
 
     [HttpDelete("{id}")]

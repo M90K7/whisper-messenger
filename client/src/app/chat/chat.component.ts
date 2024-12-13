@@ -14,7 +14,6 @@ import { ChatEmptyComponent } from "./chat-empty/chat-empty.component";
     MatCardModule,
     ChatListComponent,
     ChatRoomComponent,
-    MenuComponent,
     ChatEmptyComponent
   ],
   templateUrl: './chat.component.html',

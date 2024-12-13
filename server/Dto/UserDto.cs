@@ -43,17 +43,12 @@ public class UserDto
   }
 }
 
-public enum MessageStatus
-{
-  Store = 0,
-  View
-}
 
 public class ConfirmDto
 {
   public int MessageId { get; set; }
   public int ReceiverId { get; set; }
-
-  public MessageStatus Status { get; set; }
+  public string FilePath { get; set; }
+  public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
 }

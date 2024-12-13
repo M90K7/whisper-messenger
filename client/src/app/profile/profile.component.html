@@ -2,16 +2,17 @@
 <mat-divider></mat-divider>
 <mat-dialog-content>
   <form class="d-flex flex-column gap-3 align-items-center"
-        [formGroup]="profileForm"
-        (ngSubmit)="updateProfile()">
+        [formGroup]="profileForm">
 
     @if(!isAdmin()) {
     <!-- Avatar -->
-    <div class="avatar">
+    <div class="profile">
       <img [tabIndex]="0"
-           [src]="previewAvatar || defaultAvatar"
+           [src]="previewAvatar()"
            alt="Avatar"
-           (click)="fileInput.click()" />
+           class="avatar profile--img"
+           (click)="fileInput.click()"
+           onerror="this.src = '/img/default-profile.svg'" />
       <input #fileInput
              class="d-none"
              type="file"
@@ -24,6 +25,7 @@
                     class="w-100">
       <mat-label>نام کاربری</mat-label>
       <input matInput
+             autocomplete="off"
              name="userName"
              formControlName="userName" />
       @let userName_invalid = profileForm.controls['userName'].touched && profileForm.controls['userName'].invalid;
@@ -39,6 +41,7 @@
                     class="w-100">
       <mat-label>نام نمایشی</mat-label>
       <input matInput
+             autocomplete="off"
              name="fullName"
              formControlName="fullName"
              [errorStateMatcher]="matcher" />
@@ -49,10 +52,12 @@
                     class="w-100">
       <mat-label>رمـز عبور</mat-label>
       <input matInput
+             autocomplete="off"
              type="password"
              name="password"
              autocomplete="false"
              formControlName="password" />
+      <mat-hint>رمز عبور حداقل 6 حرف و دارای عدد و حروف خاص باشد.</mat-hint>
       @let password_invalid = profileForm.controls['password'].touched && profileForm.controls['password'].invalid;
       @if(password_invalid){
       <mat-error>
@@ -61,12 +66,35 @@
       }
     </mat-form-field>
 
+    @if(!isAdmin()) {
+    <!-- Retry Password -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>رمـز عبور جدید</mat-label>
+      <input matInput
+             autocomplete="off"
+             type="password"
+             name="newPassword"
+             autocomplete="false"
+             formControlName="newPassword" />
+      @let newPassword_invalid = profileForm.controls['newPassword'].touched &&
+      profileForm.controls['newPassword'].invalid &&
+      profileForm.controls['newPassword'].value !== profileForm.controls['password'].value;
+      @if(newPassword_invalid){
+      <mat-error>
+        رمزعبور قدیم و رمز عبور جدید دارای الگو صحیح نیست.
+      </mat-error>
+      }
+    </mat-form-field>
+    }
+
     <!-- email -->
     <mat-form-field appearance="outline"
                     class="w-100">
       <mat-label>ایمیل</mat-label>
       <input type="email"
              matInput
+             autocomplete="off"
              formControlName="email"
              placeholder="Ex. pat@example.com"
              [errorStateMatcher]="matcher"
@@ -105,7 +133,8 @@
              name="uptimeMinutes"
              formControlName="uptimeMinutes"
              [errorStateMatcher]="matcher" />
-      @let uptimeMinutes_invalid = profileForm.controls['uptimeMinutes'].touched && profileForm.controls['uptimeMinutes'].invalid;
+      @let uptimeMinutes_invalid = profileForm.controls['uptimeMinutes'].touched &&
+      profileForm.controls['uptimeMinutes'].invalid;
       @if(uptimeMinutes_invalid){
       <mat-error>
         مدت زمان نشست کاربر صحیح نمی‌باشد.
@@ -122,6 +151,8 @@
           color="primary"
           type="submit"
           (click)="save()">ذخیره</button>
+  @if(isAdmin()) {
   <button mat-button
           mat-dialog-close>انصراف</button>
+  }
 </mat-dialog-actions>

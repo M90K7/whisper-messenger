@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, Validators } from "@angular/forms";
+import { ValidationErrors, FormBuilder, FormControl, FormGroup, FormGroupDirective, FormsModule, NgForm, ReactiveFormsModule, Validators, AbstractControl } from "@angular/forms";
 
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
@@ -45,8 +45,10 @@ export class ProfileComponent implements OnInit {
   readonly data = inject<ProfileArgs>(MAT_DIALOG_DATA);
   readonly _snackBar = inject(MatSnackBar);
   profileForm: FormGroup;
+
   defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
-  previewAvatar?: string | ArrayBuffer | null;
+
+  previewAvatar = signal(this.defaultAvatar);
 
   isAdmin = signal(false);
 
@@ -59,6 +61,11 @@ export class ProfileComponent implements OnInit {
       userName: ['', [Validators.required]],
       fullName: ['', []],
       password: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, (control: AbstractControl) => {
+        if (this.profileForm && this.profileForm.controls['password'].value.length > 5 && control.value.length > 5)
+          return null;
+        return {};
+      }]],
       email: ['', [Validators.email]],
       role: ['operator', []],
       uptimeMinutes: [60, [Validators.required, Validators.min(5), Validators.max(60 * 48)]],
@@ -74,17 +81,23 @@ export class ProfileComponent implements OnInit {
         fullName: this.data.user.fullName || '',
         email: this.data.user.email,
         role: this.data.user.role,
-        uptimeMinutes: this.data.user.uptimeMinutes
+        uptimeMinutes: this.data.user.uptimeMinutes,
+        password: ''
       });
-      this.previewAvatar = this.data.user.avatar;
+      if (this.data.user.avatar)
+        this.previewAvatar.set(this.data.user.avatar);
     }
     this.isAdmin.set(this.data.isAdmin || false);
+
+    setTimeout(() => {
+      this.profileForm.controls['password'].setValue('');
+      this.profileForm.controls['password'].markAsUntouched();
+    }, 1000);
   }
 
   save() {
     this.profileForm.markAllAsTouched();
     this.profileForm.updateValueAndValidity({ onlySelf: true, emitEvent: true });
-
 
     if (this.data.user?.id) {
       this.userService.update({ id: this.data.user.id, ...this.profileForm.value }, this.isAdmin()).subscribe(
@@ -119,33 +132,29 @@ export class ProfileComponent implements OnInit {
 
   }
 
-  // Load current user profile
-  loadProfile() {
-    this.userService.getProfile().subscribe((profile: any) => {
-      this.profileForm.patchValue({
-        username: profile.username,
-        displayName: profile.displayName,
-      });
-      this.previewAvatar = profile.avatar || this.defaultAvatar;
-    });
-  }
-
   // Handle avatar change
-  onAvatarChange(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => (this.previewAvatar = reader.result);
-      reader.readAsDataURL(file);
+  onAvatarChange(event: Event) {
+    const files = event.target && (event.target as HTMLInputElement).files;
+    if (files && files[0].size < (256 * 1024 * 1024 * 5) && this.isImage(files[0].name)) {
+      var form = new FormData();
+      form.append("avatar", files[0], files[0].name);
+
+      this.userService.updateAvatar(form).subscribe({
+        next: (user) => {
+          this.previewAvatar.update(u => this.authSvc.avatarSrc(user.avatar)!);
+          this._snackBar.open("تصویر با موفقیت به‌روزرسانی شد.", "", snackSuccess);
+        },
+        error: () => {
+          this._snackBar.open("خطا در انجام عملیات، لطفا مجدد سعی نمایید", "", snackError);
+        }
+      });
+    } else {
+      this._snackBar.open("لطفا تصویر مناسب و با حجم کمتر از 5 MB مناسب انتخاب کنید.", "", snackError);
     }
   }
 
-  // Update profile
-  updateProfile() {
-    const profileData = this.profileForm.value;
-    this.userService.update(profileData).subscribe(() => {
-      alert('Profile updated successfully!');
-    });
+  private isImage(filePath?: string): boolean {
+    return Boolean(filePath && /\.(jpg|jpeg|png|gif)$/i.test(filePath));
   }
 }
 

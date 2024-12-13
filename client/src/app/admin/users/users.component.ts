@@ -55,7 +55,7 @@ export class UsersComponent {
     dialogRef.componentInstance.ngOnInit();
 
     dialogRef.afterClosed().subscribe((_user: UserDto) => {
-      if (_user !== undefined) {
+      if (user && typeof user === "object") {
         if (user) {
           Object.assign(user, _user);
           this.users$.update(_users => Array.from(_users));

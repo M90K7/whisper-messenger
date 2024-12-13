@@ -152,3 +152,11 @@ body::-webkit-scrollbar-thumb {
   align-items: center;
   justify-content: center;
 }
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid gray;
+  border-radius: 50%;
+  object-fit: cover;
+}

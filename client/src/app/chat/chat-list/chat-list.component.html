@@ -4,7 +4,8 @@
   <mat-list-item class="user-item position-relative gap-1"
                  [class.active]="user === (userSelected$ | async)"
                  (click)="selectUser(user)">
-    <img [src]="user.avatar"
+    <img class="avatar"
+         [src]="user.avatar"
          [class]="classOnline"
          height="46"
          alt="Avatar"

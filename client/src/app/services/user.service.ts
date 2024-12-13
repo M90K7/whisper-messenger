@@ -44,6 +44,10 @@ export class UserService {
     return this.http.put(this.urlSvc.user.update, profileData);
   }
 
+  updateAvatar(profileData: FormData) {
+    return this.http.put<UserDto>(this.urlSvc.user.avatar, profileData);
+  }
+
   delete(userId: number) {
     return (this.http.delete(this.urlSvc.user.admin.delete + `/${userId}`));
   }

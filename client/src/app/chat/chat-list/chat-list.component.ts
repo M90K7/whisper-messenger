@@ -1,10 +1,10 @@
 import { AsyncPipe, } from "@angular/common";
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 
 import { MatListModule } from "@angular/material/list";
 import { MatIconModule } from "@angular/material/icon";
-import { UserService } from "@app/services";
+import { AuthService, UserService } from "@app/services";
 import { UserDto } from "@app/models";
 
 @Component({
@@ -23,12 +23,17 @@ export class ChatListComponent {
 
   userSelected$ = outputToObservable(this.userSelected);
 
+  private readonly _authSvc = inject(AuthService);
+
   constructor(private userService: UserService) {
     this.loadUsers();
   }
 
   loadUsers() {
     this.userService.getUsers().subscribe(users => {
+      for (const user of users) {
+        user.avatar = this._authSvc.avatarSrc(user.avatar);
+      }
       this.users.set(users);
     });
   }

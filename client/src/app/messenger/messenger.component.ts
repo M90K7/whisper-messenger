@@ -11,7 +11,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
 import { AuthService } from "@app/services";
 import { UserDto } from "@app/models";
-import { equal } from "assert";
 
 @Component({
   selector: 'app-messenger',
@@ -34,7 +33,7 @@ export class MessengerComponent {
   readonly authSvc = inject(AuthService);
   readonly routerSvc = inject(Router);
 
-  user = signal<UserDto>(this.authSvc.getUser());
+  user = signal<UserDto>(this.authSvc.getUser()!);
 
   openDialog(): void {
     const dialogRef = this.dialog.open(ProfileComponent, {
@@ -43,20 +42,26 @@ export class MessengerComponent {
         isAdmin: false,
         user: this.user()
       },
+      width: 'min(50%, 350px)'
     });
 
     dialogRef.componentInstance.ngOnInit();
 
     dialogRef.afterClosed().subscribe((user: UserDto) => {
-      if (user !== undefined) {
-        this.user.update(u => ({ ...u, fullName: user.fullName, userName: user.userName, email: user.email }));
+      if (user && typeof user === "object") {
+        this.user.update(u => ({ ...u, fullName: user.fullName, userName: user.userName, email: user.email, avatar: this.authSvc.avatarSrc(user.avatar) }));
       }
+      this.authSvc.refresh().subscribe({
+        next: () => {
+          this.user.set(this.authSvc.getUser()!);
+        }
+      });
     });
   }
 
   logout() {
     this.authSvc.logout();
-    this.routerSvc.navigateByUrl("/");
+    this.routerSvc.navigateByUrl("/login");
   }
 
 }

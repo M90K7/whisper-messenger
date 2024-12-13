@@ -12,16 +12,22 @@ namespace ChatApp.Controllers
     [Route("api/user")]
     public class UserController : ControllerBase
     {
+        private readonly IConfiguration configuration;
+        private readonly IWebHostEnvironment _hostEnvironment;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly OnlineUserService _onlineUserSvc;
 
         public UserController(
+            IConfiguration configuration,
+            IWebHostEnvironment hostEnvironment,
             UserManager<User> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             OnlineUserService onlineUserSvc
         )
         {
+            this.configuration = configuration;
+            this._hostEnvironment = hostEnvironment;
             _userManager = userManager;
             _roleManager = roleManager;
             this._onlineUserSvc = onlineUserSvc;
@@ -36,8 +42,8 @@ namespace ChatApp.Controllers
                 )
                 .ToListAsync();
 
-            var currentUserName = User.Identity?.Name;
-            users = users.Where(u => u.UserName.ToString() != currentUserName).ToList();
+            var currentUserId = int.Parse(User.Identity.Name);
+            users = users.Where(u => u.Id != currentUserId).ToList();
 
             return Ok(users);
         }
@@ -45,14 +51,14 @@ namespace ChatApp.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
-            var user = await _userManager.FindByIdAsync(request.Id.ToString());
+            var user = await _userManager.FindByIdAsync(User.Identity.Name);
 
             if (user == null)
                 return NotFound();
 
             // Update user properties
             user.UserName = request.UserName ?? user.UserName;
-            user.FullName = request.DisplayName ?? user.FullName;
+            user.FullName = request.FullName ?? user.FullName;
 
             if (!string.IsNullOrEmpty(request.Password))
             {
@@ -67,6 +73,51 @@ namespace ChatApp.Controllers
 
             // Save updated user
             var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+                return BadRequest(updateResult.Errors);
+
+            return Ok(UserDto.FromUser(user, true));
+        }
+
+
+        [HttpPut("avatar")]
+        public async Task<IActionResult> UpdateAvatarAsync([FromForm] UpdateAvatarRequest request)
+        {
+            var user = await _userManager.FindByIdAsync(User.Identity.Name);
+
+            if (user == null)
+                return NotFound();
+
+            var profileDir = Path.Join(
+                _hostEnvironment.WebRootPath,
+                configuration["ProfileDir"]
+                );
+            Directory.CreateDirectory(profileDir);
+            var file = User.Identity.Name + new FileInfo(request.Avatar.FileName).Extension;
+
+            var fs = new FileStream(Path.Join(profileDir, file), FileMode.OpenOrCreate, FileAccess.Write);
+            var stream = request.Avatar.OpenReadStream();
+            stream.CopyTo(fs);
+            stream.Flush();
+            stream.Close();
+            stream.Dispose();
+            fs.Flush();
+            fs.Close();
+            fs.Dispose();
+
+            if (!string.IsNullOrEmpty(user.Avatar))
+            {
+                var oldAvatar = Path.Join(profileDir, user.Avatar);
+                if (System.IO.File.Exists(oldAvatar))
+                {
+                    System.IO.File.Delete(oldAvatar);
+                }
+            }
+
+            user.Avatar = file;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
             if (!updateResult.Succeeded)
                 return BadRequest(updateResult.Errors);
 
@@ -97,9 +148,14 @@ namespace ChatApp.Controllers
     {
         public int Id { get; set; }
         public string UserName { get; set; }
-        public string DisplayName { get; set; }
+        public string FullName { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public string CurrentPassword { get; set; } // For password updates
+    }
+
+    public class UpdateAvatarRequest
+    {
+        public IFormFile Avatar { get; set; }
     }
 }

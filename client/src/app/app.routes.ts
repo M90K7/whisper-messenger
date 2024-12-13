@@ -43,6 +43,17 @@ export const routes: Routes = [
       { path: 'chat', component: ChatComponent },
       {
         path: 'admin', component: AdminComponent,
+        canActivate: [
+          (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+            const authSvc = inject(AuthService);
+            const routerSvc = inject(Router);
+
+            if (!authSvc.isAuthenticated() || !authSvc.isAdmin()) {
+              return routerSvc.navigateByUrl("/login");
+            }
+            return true;
+          }
+        ],
         loadChildren: () => import("./admin/admin.routes").then(r => r.routes)
       },
     ]
