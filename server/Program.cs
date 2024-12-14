@@ -40,6 +40,19 @@ builder.Services
             };
             x.Events = new JwtBearerEvents
             {
+                OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            // Check if the request is for SignalR
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/io/chat")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        },
                 OnForbidden = (jwt) =>
                 {
                     return Task.CompletedTask;
@@ -82,12 +95,14 @@ builder.Services
         }
     )
     .AddHubOptions<ChatHub>(
-        options =>
+        x =>
         {
+
             // options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
         }
     )
-    .AddJsonProtocol();
+    .AddJsonProtocol()
+    ;
 
 
 builder.Services.AddDbContext<AppDbContext>(
@@ -187,7 +202,11 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 
-app.MapHub<ChatHub>("/chatHub");
+app.MapHub<ChatHub>("io/chat").RequireAuthorization(x =>
+{
+    x.AuthenticationSchemes = new[] { JwtBearerDefaults.AuthenticationScheme };
+    x.RequireRole("admin", "operator");
+});
 
 
 app.Run();

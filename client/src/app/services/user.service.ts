@@ -52,4 +52,11 @@ export class UserService {
     return (this.http.delete(this.urlSvc.user.admin.delete + `/${userId}`));
   }
 
+  toCdnAvatar(url?: string) {
+    if (url) {
+      return this.urlSvc.cdn.profiles + '/' + url + "?t=" + Date.now();
+    }
+    return undefined;
+  }
+
 }

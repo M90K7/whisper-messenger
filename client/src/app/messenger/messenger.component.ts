@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { MatIconModule } from '@angular/material/icon';
@@ -9,7 +9,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
-import { AuthService } from "@app/services";
+import { AuthService, WebSocketService } from "@app/services";
 import { UserDto } from "@app/models";
 
 @Component({
@@ -27,13 +27,19 @@ import { UserDto } from "@app/models";
   templateUrl: './messenger.component.html',
   styleUrl: './messenger.component.scss'
 })
-export class MessengerComponent {
+export class MessengerComponent implements OnDestroy {
+
 
   readonly dialog = inject(MatDialog);
   readonly authSvc = inject(AuthService);
   readonly routerSvc = inject(Router);
+  private readonly _wsSvc = inject(WebSocketService);
 
   user = signal<UserDto>(this.authSvc.getUser()!);
+
+  constructor() {
+    this._wsSvc.start();
+  }
 
   openDialog(): void {
     const dialogRef = this.dialog.open(ProfileComponent, {
@@ -62,6 +68,10 @@ export class MessengerComponent {
   logout() {
     this.authSvc.logout();
     this.routerSvc.navigateByUrl("/login");
+  }
+
+  ngOnDestroy(): void {
+    this._wsSvc.stop();
   }
 
 }

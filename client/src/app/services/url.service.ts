@@ -5,7 +5,9 @@ import { Injectable } from '@angular/core';
 })
 export class UrlService {
 
-  baseUrl = "https://localhost:5000/api";
+  baseServer = "https://localhost:5000";
+  baseUrl = this.baseServer + "/api";
+  baseSocket = this.baseServer + "/io/chat";
 
   baseUserUrl = this.baseUrl + "/user";
   _chatUrl = this.baseUrl + "/chat";
@@ -20,7 +22,13 @@ export class UrlService {
     refresh: this.baseUrl + "/auth/refresh"
   };
 
+
+
   chat = {
+    ws: {
+      message: "SendMessageAsync",
+      confirm: "SendConfirmAsync",
+    },
     send: this._chatUrl,
     sendFile: this._chatUrl + "/File",
     history: this._chatUrl + "/history",
@@ -28,6 +36,9 @@ export class UrlService {
   };
 
   user = {
+    ws: {
+      user: "SendUserAsync"
+    },
     list: this.baseUserUrl,
     update: this.baseUserUrl,
     avatar: this.baseUserUrl + "/avatar",

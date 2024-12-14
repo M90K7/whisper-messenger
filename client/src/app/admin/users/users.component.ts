@@ -36,6 +36,10 @@ export class UsersComponent {
     inject(UserService).getAdminUsers().pipe(
       catchError(() => of([]))
     ).subscribe(users => {
+      for (const user of users) {
+        if (user.avatar)
+          user.avatar = this.userSvc.toCdnAvatar(user.avatar);
+      }
       this.users$.set(users);
     });
   }

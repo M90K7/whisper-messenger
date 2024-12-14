@@ -39,15 +39,17 @@ namespace ChatApp
             await base.OnConnectedAsync();
         }
 
-        public override Task OnDisconnectedAsync(Exception? exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var userId = Context.UserIdentifier;
             if (userId != null)
             {
                 _onlineUserSvc.RemoveUser(userId);
+                var user = await _userManager.FindByIdAsync(userId);
+
+                await Clients.All.SendUserAsync(UserDto.FromUser(user, false));
             }
-            // Clients.All.SendAsync("UserDisconnected", userId);
-            return base.OnDisconnectedAsync(exception);
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
@@ -86,5 +88,10 @@ public class OnlineUserService
             return true;
         }
         return false;
+    }
+
+    public async Task SendUserAsync(IHubContext<ChatHub, IChatClient> hub, UserDto user)
+    {
+        await hub.Clients.All.SendUserAsync(user);
     }
 }

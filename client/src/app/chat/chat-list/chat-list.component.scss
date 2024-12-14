@@ -13,15 +13,22 @@
     background: rgba(97, 132, 255, 0.1) !important;
   }
 }
+.new-msg {
+  width: 15px;
+  height: 15px;
+  background: rgb(159, 51, 51);
+  border-radius: 50%;
+}
+
 img {
   border: 2px solid gray;
   border-radius: 50%;
   box-sizing: border-box;
   &.is-online {
-    border-color: greenyellow;
+    border-color: rgb(53, 168, 55);
   }
   &.is-offline {
-    border-color: gray;
+    border-color: rgb(145, 137, 185);
   }
 }
 .dot-status {

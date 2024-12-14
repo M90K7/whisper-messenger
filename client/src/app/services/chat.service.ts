@@ -1,5 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
+import * as signalR from "@microsoft/signalr";
+
 import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto } from "@app/models";
 import { UrlService } from "./url.service";
 

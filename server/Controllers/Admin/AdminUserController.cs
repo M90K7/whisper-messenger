@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers.Admin;
@@ -12,16 +13,22 @@ namespace ChatApp.Controllers.Admin;
 [Route("api/user/admin")]
 public class AdminUserController : ControllerBase
 {
+    private readonly IHubContext<ChatHub, IChatClient> chatHubSvc;
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
+    private readonly OnlineUserService onlineUserSvc;
 
     public AdminUserController(
+        IHubContext<ChatHub, IChatClient> chatHubSvc,
         UserManager<User> userManager,
-        RoleManager<IdentityRole<int>> roleManager
+        RoleManager<IdentityRole<int>> roleManager,
+        OnlineUserService onlineUserSvc
     )
     {
+        this.chatHubSvc = chatHubSvc;
         _userManager = userManager;
         _roleManager = roleManager;
+        this.onlineUserSvc = onlineUserSvc;
     }
 
     [HttpPost()]
@@ -48,7 +55,10 @@ public class AdminUserController : ControllerBase
         }
 
         await _userManager.AddToRoleAsync(user, request.Role);
-        return Ok(user);
+
+        var userDto = UserDto.FromUser(user, false);
+        await onlineUserSvc.SendUserAsync(chatHubSvc, userDto);
+        return Ok(userDto);
     }
 
     [HttpGet]

@@ -1,3 +1,4 @@
+import { signal, WritableSignal } from "@angular/core";
 
 export interface UserDto {
   id: number;
@@ -6,6 +7,7 @@ export interface UserDto {
   fullName: string;
   avatar?: string;
   online: boolean;
+  newMessage?: boolean;
   role: string;
   email: string;
   uptimeMinutes: number;

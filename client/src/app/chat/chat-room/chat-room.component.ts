@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf } from "@angular/common";
-import { Component, OnInit, ViewChild, ElementRef, input, inject, signal, viewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, input, inject, signal, viewChild, DestroyRef } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 
 import { MatIconModule } from "@angular/material/icon";
@@ -8,17 +8,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 
-import { AuthService, ChatService, FileService } from "@app/services";
+import { AuthService, ChatService, FileService, WebSocketService } from "@app/services";
 import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
 import { Observable } from "rxjs";
-import { toObservable } from "@angular/core/rxjs-interop";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-chat-room',
   standalone: true,
   imports: [
-    NgIf,
     FormsModule,
     MatIconModule,
     MatFormFieldModule,
@@ -45,10 +44,32 @@ export class ChatRoomComponent implements OnInit {
   userId = signal(+this._authSvc.getUser()!.id); // Replace with actual logged-in user ID
   page: number = 1;
 
+  _wsSvc = inject(WebSocketService);
+  destroyRef = inject(DestroyRef);
+
   constructor(private chatService: ChatService, private fileService: FileService) {
   }
   ngOnInit(): void {
     this.loadChatHistory();
+
+    this._wsSvc.message$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: msg => {
+        if (msg.senderId != this.selectedUser().id) {
+          return;
+        }
+        if (msg.filePath) {
+          msg.filePath = this.chatService.toCdnFile(msg.filePath);
+        }
+        this.messages.update(_msgs => {
+          _msgs.push(msg);
+          return Array.from(_msgs);
+        });
+
+        this.scrollToBottom();
+      }
+    });
   }
 
   loadChatHistory(): void {
@@ -66,7 +87,7 @@ export class ChatRoomComponent implements OnInit {
 
       this.page++;
       // Scroll to the bottom after loading initial history
-      setTimeout(() => this.scrollToBottom(), 100);
+      this.scrollToBottom();
     });
   }
 
@@ -119,7 +140,7 @@ export class ChatRoomComponent implements OnInit {
   }
 
   clearFile() {
-    this.fileInput.nativeElement.files = null;
+    this.fileInput.nativeElement.value = "";
   }
 
   isImage(filePath?: string): boolean {
@@ -136,9 +157,11 @@ export class ChatRoomComponent implements OnInit {
   }
 
   scrollToBottom(): void {
-    const el = this.messageList?.nativeElement;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
+    setTimeout(() => {
+      const el = this.messageList?.nativeElement;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    }, 250);
   }
 }
