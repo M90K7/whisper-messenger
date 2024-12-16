@@ -57,7 +57,7 @@ public class AdminUserController : ControllerBase
         await _userManager.AddToRoleAsync(user, request.Role);
 
         var userDto = UserDto.FromUser(user, false);
-        await onlineUserSvc.SendUserAsync(chatHubSvc, userDto);
+        await onlineUserSvc.SendToAllUserWithExceptAsync(chatHubSvc, userDto, [User.Identity.Name]);
         return Ok(userDto);
     }
 

@@ -17,7 +17,6 @@ import { ChatEmptyComponent } from "./chat-empty/chat-empty.component";
     ChatEmptyComponent
   ],
   templateUrl: './chat.component.html',
-  standalone: true,
   styleUrl: './chat.component.scss'
 })
 export class ChatComponent {

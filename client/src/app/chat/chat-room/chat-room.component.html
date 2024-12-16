@@ -28,6 +28,7 @@
           }
           @if(message.filePath && !isImage(message.filePath) && !isVideo(message.filePath)) {
           <a [href]="message.filePath"
+             target="_blank"
              download>
             Download File
           </a>
@@ -64,7 +65,9 @@
     <button type="button"
             mat-icon-button
             (click)="fileInput.click()">
-      <mat-icon>attach_file</mat-icon>
+      <mat-icon matBadge="1"
+                matBadgeSize="small"
+                [matBadgeHidden]="!fileInput.value">attach_file</mat-icon>
     </button>
     <button mat-raised-button
             color="primary"

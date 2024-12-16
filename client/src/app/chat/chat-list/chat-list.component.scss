@@ -12,6 +12,10 @@
   &.active {
     background: rgba(97, 132, 255, 0.1) !important;
   }
+
+  .username {
+    font-size: 14px;
+  }
 }
 .new-msg {
   width: 15px;
@@ -36,12 +40,12 @@ img {
   height: 10px;
   border-radius: 50%;
   display: block;
-  bottom: 4px;
+  bottom: 0px;
   position: absolute;
   &.is-online {
-    background-color: greenyellow;
+    background-color: rgb(53, 168, 55);
   }
   &.is-offline {
-    background-color: gray;
+    background-color: rgb(145, 137, 185);
   }
 }

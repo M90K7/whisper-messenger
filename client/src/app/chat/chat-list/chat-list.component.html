@@ -15,7 +15,7 @@
              onerror="this.src = '/img/default-profile.svg'" />
         <span class="dot-status"
               [class]="classOnline"></span>
-        <span class="ms-2">{{ user.fullName || user.userName }}</span>
+        <span class="ms-2 username">{{ user.fullName || user.userName }}</span>
       </div>
       @if(user.newMessage) {
       <div class="new-msg"

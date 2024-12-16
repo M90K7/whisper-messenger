@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Controllers
@@ -17,10 +18,12 @@ namespace ChatApp.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly OnlineUserService _onlineUserSvc;
+        private readonly IHubContext<ChatHub, IChatClient> _chatHubSvc;
 
         public UserController(
             IConfiguration configuration,
             IWebHostEnvironment hostEnvironment,
+            IHubContext<ChatHub, IChatClient> chatHubSvc,
             UserManager<User> userManager,
             RoleManager<IdentityRole<int>> roleManager,
             OnlineUserService onlineUserSvc
@@ -28,6 +31,7 @@ namespace ChatApp.Controllers
         {
             this.configuration = configuration;
             this._hostEnvironment = hostEnvironment;
+            _chatHubSvc = chatHubSvc;
             _userManager = userManager;
             _roleManager = roleManager;
             this._onlineUserSvc = onlineUserSvc;
@@ -76,7 +80,11 @@ namespace ChatApp.Controllers
             if (!updateResult.Succeeded)
                 return BadRequest(updateResult.Errors);
 
-            return Ok(UserDto.FromUser(user, true));
+            var uDto = UserDto.FromUser(user, true);
+
+            await _onlineUserSvc.SendToAllUserWithExceptAsync(_chatHubSvc, uDto, [User.Identity.Name]);
+
+            return Ok(uDto);
         }
 
 
@@ -105,7 +113,7 @@ namespace ChatApp.Controllers
             fs.Close();
             fs.Dispose();
 
-            if (!string.IsNullOrEmpty(user.Avatar))
+            if (!string.IsNullOrEmpty(user.Avatar) && user.Avatar != file)
             {
                 var oldAvatar = Path.Join(profileDir, user.Avatar);
                 if (System.IO.File.Exists(oldAvatar))
@@ -121,7 +129,11 @@ namespace ChatApp.Controllers
             if (!updateResult.Succeeded)
                 return BadRequest(updateResult.Errors);
 
-            return Ok(UserDto.FromUser(user, true));
+            var uDto = UserDto.FromUser(user, true);
+
+            await _onlineUserSvc.SendToAllUserWithExceptAsync(_chatHubSvc, uDto, [User.Identity.Name]);
+
+            return Ok(uDto);
         }
     }
 

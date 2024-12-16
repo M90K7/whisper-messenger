@@ -34,9 +34,10 @@ namespace ChatApp
             }
             var user = await _userManager.FindByIdAsync(userId);
 
-            await Clients.All.SendUserAsync(UserDto.FromUser(user, true));
-
             await base.OnConnectedAsync();
+
+            await this.Clients.AllExcept(Context.ConnectionId).SendUserAsync(UserDto.FromUser(user, true));
+
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -47,8 +48,11 @@ namespace ChatApp
                 _onlineUserSvc.RemoveUser(userId);
                 var user = await _userManager.FindByIdAsync(userId);
 
-                await Clients.All.SendUserAsync(UserDto.FromUser(user, false));
+                await Clients.AllExcept(Context.ConnectionId).SendUserAsync(UserDto.FromUser(user, false));
             }
+            else if (!string.IsNullOrEmpty(Context.ConnectionId))
+                _onlineUserSvc.RemoveWithConnectionId(Context.ConnectionId);
+
             await base.OnDisconnectedAsync(exception);
         }
     }
@@ -66,6 +70,19 @@ public class OnlineUserService
     public void RemoveUser(string userId)
     {
         _onlineUsers.TryRemove(userId, out _);
+    }
+
+    public void RemoveWithConnectionId(string connectionId)
+    {
+        foreach (var item in _onlineUsers)
+        {
+            if (item.Value == connectionId)
+            {
+                var key = item.Key;
+                RemoveUser(key);
+                break;
+            }
+        }
     }
 
     public string GetConnectionId(string userId)
@@ -90,8 +107,26 @@ public class OnlineUserService
         return false;
     }
 
-    public async Task SendUserAsync(IHubContext<ChatHub, IChatClient> hub, UserDto user)
+    public async Task SendToAllUserAsync(IHubContext<ChatHub, IChatClient> hub, UserDto user)
     {
         await hub.Clients.All.SendUserAsync(user);
+    }
+
+    public async Task SendToAllUserWithExceptAsync(IHubContext<ChatHub, IChatClient> hub, UserDto user, string[] userIds)
+    {
+        List<string> exceptIds = [];
+        foreach (var uId in userIds)
+        {
+            var id = GetConnectionId(uId.ToString());
+            if (!string.IsNullOrEmpty(id))
+            {
+                exceptIds.Add(id);
+            }
+
+        }
+        if (exceptIds.Any())
+            await hub.Clients.AllExcept(exceptIds).SendUserAsync(user);
+        else
+            await SendToAllUserAsync(hub, user);
     }
 }

@@ -1,18 +1,19 @@
 import { NgClass, NgFor, NgIf } from "@angular/common";
 import { Component, OnInit, ViewChild, ElementRef, input, inject, signal, viewChild, DestroyRef } from '@angular/core';
 import { FormsModule } from "@angular/forms";
+import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { Observable } from "rxjs";
 
 import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { AuthService, ChatService, FileService, WebSocketService } from "@app/services";
 import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
-import { Observable } from "rxjs";
-import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-chat-room',
@@ -24,6 +25,7 @@ import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
     MatInputModule,
     MatButtonModule,
     MatDividerModule,
+    MatBadgeModule,
     ChatRoomHeaderComponent
   ],
   templateUrl: './chat-room.component.html',
@@ -39,6 +41,7 @@ export class ChatRoomComponent implements OnInit {
 
   messages = signal<MessageDto[]>([]);
   loading = signal(false);
+  isSending = signal(false);
 
   newMessage: string = '';
   userId = signal(+this._authSvc.getUser()!.id); // Replace with actual logged-in user ID
@@ -92,7 +95,11 @@ export class ChatRoomComponent implements OnInit {
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim()) return;
+
+    if (this.isSending())
+      return;
+
+    this.isSending.set(true);
 
     let sendObs$: Observable<ConfirmMessageDto | FileConfirmMessageDto> | undefined = undefined;
     const messageData: MessageDto = {
@@ -110,25 +117,36 @@ export class ChatRoomComponent implements OnInit {
       form.append("receiverId", messageData.receiverId!.toString());
       form.append("content", messageData.content!.toString());
       sendObs$ = this.chatService.sendFile(form);
-    } else {
+    } else if (this.newMessage.trim()) {
       sendObs$ = this.chatService.sendMessage(messageData);
     }
 
-    sendObs$?.subscribe((_newMsg) => {
-      messageData.id = _newMsg.messageId;
-      messageData.timestamp = _newMsg.timestamp;
-      if ((_newMsg as FileConfirmMessageDto).filePath) {
-        messageData.filePath = this.chatService.toCdnFile((_newMsg as FileConfirmMessageDto).filePath);
-      }
-      messageData.status = 1;
-      this.messages.update(_msgs => {
-        _msgs.push(messageData);
-        return Array.from(_msgs);
+    if (sendObs$) {
+      sendObs$.subscribe({
+        next: (_newMsg) => {
+          this.isSending.set(false);
+
+          messageData.id = _newMsg.messageId;
+          messageData.timestamp = _newMsg.timestamp;
+          if ((_newMsg as FileConfirmMessageDto).filePath) {
+            messageData.filePath = this.chatService.toCdnFile((_newMsg as FileConfirmMessageDto).filePath);
+          }
+          messageData.status = 1;
+          this.messages.update(_msgs => {
+            _msgs.push(messageData);
+            return Array.from(_msgs);
+          });
+          this.newMessage = '';
+          this.clearFile();
+          this.scrollToBottom();
+        },
+        error: () => {
+          this.isSending.set(false);
+        }
       });
-      this.newMessage = '';
-      this.clearFile();
-      this.scrollToBottom();
-    });
+    } else {
+      this.isSending.set(false);
+    }
   }
 
   getFile(): File | undefined {

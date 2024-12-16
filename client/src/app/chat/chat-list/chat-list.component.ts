@@ -41,6 +41,8 @@ export class ChatListComponent {
         const findUser = this.users().find(u => u.id == user.id);
         if (findUser) {
           findUser.online = user.online;
+          findUser.fullName = user.fullName;
+          findUser.avatar = this._authSvc.avatarSrc(user.avatar);
           this.users.update(_users => Array.from(_users));
         } else {
           this.users.update(_users => {
