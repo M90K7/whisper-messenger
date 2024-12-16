@@ -1,5 +1,6 @@
 !chatapp.db
 chatapp.db-*
+wwwroot/files/**
 
 package-lock.json
 
