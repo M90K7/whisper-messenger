@@ -8,7 +8,14 @@ namespace ChatApp.Models
     public int ReceiverId { get; set; }
     public string Content { get; set; }
     public string? FilePath { get; set; }
-    public bool Seen { get; set; }
+
+    /// <summary>
+    /// null -> save on db
+    /// false -> receive
+    /// true -> see
+    /// </summary>
+    /// <value></value>
+    public bool? Seen { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
   }
 }

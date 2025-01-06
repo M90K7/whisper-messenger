@@ -45,11 +45,13 @@ public class ChatController : ControllerBase
         });
         await _context.SaveChangesAsync();
         var res = await onlineUserSvc.SendMessageAsync(_chatHubSvc, entry.Entity);
+
         return Ok(new ConfirmDto
         {
             MessageId = entry.Entity.Id,
             ReceiverId = entry.Entity.ReceiverId,
-            Timestamp = entry.Entity.Timestamp
+            Timestamp = entry.Entity.Timestamp,
+            Seen = res == true ? false : null
         });
     }
 
@@ -91,6 +93,13 @@ public class ChatController : ControllerBase
         return Ok(new ConfirmDto { MessageId = msg.Id, ReceiverId = msg.ReceiverId, FilePath = msg.FilePath, Timestamp = msg.Timestamp });
     }
 
+    [HttpPost("seen")]
+    public async Task SeenMessageIdsAsync([FromBody] List<int> messageIds, int senderId)
+    {
+        var _receiverId = int.Parse(User.Identity.Name);
+        _context.Messages.Where(m => messageIds.Contains(m.Id)).ExecuteUpdate(m => m.SetProperty(_m => _m.Seen, true));
+    }
+
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetMessagesAsync(int userId)
     {
@@ -118,6 +127,25 @@ public class ChatController : ControllerBase
             .ToListAsync();
 
         return Ok(messages);
+    }
+
+    [HttpDelete("{messageId}")]
+    public async Task<IActionResult> DeleteMessageAsync(int messageId)
+    {
+        var _userId = int.Parse(User.Identity.Name);
+        var message = await _context.Messages.SingleOrDefaultAsync(m => m.Id == messageId && (m.SenderId == _userId || m.ReceiverId == _userId));
+        _context.Messages.Remove(message);
+        var rowDelete = await _context.SaveChangesAsync();
+
+        if (rowDelete > 0)
+        {
+            await onlineUserSvc.DeleteMessageAsync(_chatHubSvc, messageId, _userId == message.SenderId ? message.ReceiverId : message.SenderId);
+        }
+
+        return Ok(new
+        {
+            delete = rowDelete > 0
+        });
     }
 }
 

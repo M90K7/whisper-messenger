@@ -9,6 +9,7 @@ namespace ChatApp
     public interface IChatClient
     {
         Task SendMessageAsync(Message msg);
+        Task DeleteMessageAsync(Message msg);
         Task SendUserAsync(UserDto msg);
 
         Task SendConfirmAsync(ConfirmDto confirm);
@@ -98,10 +99,28 @@ public class OnlineUserService
 
     public async Task<bool> SendMessageAsync(IHubContext<ChatHub, IChatClient> hub, Message message)
     {
-        var conId = GetConnectionId(message.ReceiverId.ToString());
+        try
+        {
+            var conId = GetConnectionId(message.ReceiverId.ToString());
+            if (conId != null)
+            {
+                await hub.Clients.Client(conId).SendMessageAsync(message);
+                return true;
+            }
+            return false;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteMessageAsync(IHubContext<ChatHub, IChatClient> hub, int messageId, int receiverId)
+    {
+        var conId = GetConnectionId(receiverId.ToString());
         if (conId != null)
         {
-            await hub.Clients.Client(conId).SendMessageAsync(message);
+            await hub.Clients.Client(conId).DeleteMessageAsync(new Message { Id = messageId });
             return true;
         }
         return false;
