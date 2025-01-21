@@ -9,10 +9,13 @@ namespace ChatApp
     public interface IChatClient
     {
         Task SendMessageAsync(Message msg);
+        Task SendSeenMessagesAsync(List<int> messageIds);
         Task DeleteMessageAsync(Message msg);
         Task SendUserAsync(UserDto msg);
 
         Task SendConfirmAsync(ConfirmDto confirm);
+
+        Task SendFileProgress(FileProgressDto dto);
     }
 
     public class ChatHub : Hub<IChatClient>
@@ -148,4 +151,35 @@ public class OnlineUserService
         else
             await SendToAllUserAsync(hub, user);
     }
+
+    public async Task SendSeenMessageIds(IHubContext<ChatHub, IChatClient> hub, int senderId, List<int> messageIds)
+    {
+        try
+        {
+            var conId = GetConnectionId(senderId.ToString());
+            if (conId != null)
+            {
+                await hub.Clients.Client(conId).SendSeenMessagesAsync(messageIds);
+            }
+        }
+        catch (Exception)
+        {
+        }
+    }
+
+    public async Task SendFileProgress(IHubContext<ChatHub, IChatClient> hub, int senderId, FileProgressDto dto)
+    {
+        try
+        {
+            var conId = GetConnectionId(senderId.ToString());
+            if (conId != null)
+            {
+                await hub.Clients.Client(conId).SendFileProgress(dto);
+            }
+        }
+        catch (Exception)
+        {
+        }
+    }
+
 }

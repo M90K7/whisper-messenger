@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using whisper_messenger.Services;
 
 namespace ChatApp.Controllers;
 
@@ -56,7 +57,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("file")]
-    public async Task<IActionResult> FileMessageAsync([FromForm] FileMessageRequest request)
+    public async Task<IActionResult> FileMessageAsync([FromForm] FileMessageRequest request, [FromServices] UploadManager uploadManager, CancellationToken cancellationToken)
     {
         if (request.File == null)
         {
@@ -70,15 +71,17 @@ public class ChatController : ControllerBase
         Directory.CreateDirectory(chatDir);
         var file = Guid.NewGuid() + new FileInfo(request.File.FileName).Extension;
 
-        var fs = new FileStream(Path.Join(chatDir, file), FileMode.OpenOrCreate, FileAccess.Write);
-        var stream = request.File.OpenReadStream();
-        stream.CopyTo(fs);
-        stream.Flush();
-        stream.Close();
-        stream.Dispose();
-        fs.Flush();
-        fs.Close();
-        fs.Dispose();
+        // var fs = new FileStream(Path.Join(chatDir, file), FileMode.OpenOrCreate, FileAccess.Write);
+        // var stream = request.File.OpenReadStream();
+        // stream.CopyTo(fs);
+        // stream.Flush();
+        // stream.Close();
+        // stream.Dispose();
+        // fs.Flush();
+        // fs.Close();
+        // fs.Dispose();
+
+        await uploadManager.SaveFile(_chatHubSvc, request.SenderId, request.File, cancellationToken);
 
         var msg = new Message
         {
@@ -98,6 +101,7 @@ public class ChatController : ControllerBase
     {
         var _receiverId = int.Parse(User.Identity.Name);
         _context.Messages.Where(m => messageIds.Contains(m.Id)).ExecuteUpdate(m => m.SetProperty(_m => _m.Seen, true));
+        await onlineUserSvc.SendSeenMessageIds(_chatHubSvc, senderId, messageIds);
     }
 
     [HttpGet("{userId}")]
@@ -134,8 +138,13 @@ public class ChatController : ControllerBase
     {
         var _userId = int.Parse(User.Identity.Name);
         var message = await _context.Messages.SingleOrDefaultAsync(m => m.Id == messageId && (m.SenderId == _userId || m.ReceiverId == _userId));
-        _context.Messages.Remove(message);
-        var rowDelete = await _context.SaveChangesAsync();
+
+        if (message == null)
+        {
+            return NotFound();
+        }
+
+        var rowDelete = await _context.Messages.ExecuteUpdateAsync(m => m.SetProperty(p => p.Removed, true));
 
         if (rowDelete > 0)
         {
