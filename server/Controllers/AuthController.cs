@@ -1,4 +1,5 @@
 using ChatApp.Models;
+using ChatApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,16 +19,19 @@ namespace ChatApp.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly ActiveDirectoryService _adSvc;
         private readonly JwtSettings _jwtSettings;
 
         public AuthController(
             UserManager<User> userManager,
             RoleManager<IdentityRole<int>> roleManager,
-            IOptions<JwtSettings> jwtSettings
+            IOptions<JwtSettings> jwtSettings,
+            ActiveDirectoryService AdSvc
         )
         {
             _userManager = userManager;
             this._roleManager = roleManager;
+            _adSvc = AdSvc;
             _jwtSettings = jwtSettings.Value;
         }
 
@@ -35,9 +39,17 @@ namespace ChatApp.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var user = await _userManager.FindByNameAsync(request.Username);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+            if (user != null)
             {
-                return Unauthorized("Invalid username or password.");
+
+                if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+                {
+                    return Unauthorized("Invalid username or password.");
+                }
+            }
+            else
+            {
+                user = _adSvc.Login(request.Username, request.Password);
             }
 
             var token = GenerateJwtToken(user);

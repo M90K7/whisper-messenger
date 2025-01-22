@@ -12,6 +12,8 @@ export interface MessageDto {
   status: number;
   timestamp?: string;
 
+  removed?: boolean;
+
   sender?: UserDto;
   receiver?: UserDto;
 }

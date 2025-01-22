@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace whisper_messenger.Services;
 
 
-public class UploadManager
+public class UploadManagerService
 {
   protected static readonly ConcurrentDictionary<string, CancellationTokenSource> _files =
       new ConcurrentDictionary<string, CancellationTokenSource>();
@@ -15,7 +15,7 @@ public class UploadManager
 
   public string Folder { get; private set; }
 
-  public UploadManager(IConfiguration cfg, IWebHostEnvironment hostEnv, OnlineUserService onlineUserSvc)
+  public UploadManagerService(IConfiguration cfg, IWebHostEnvironment hostEnv, OnlineUserService onlineUserSvc)
   {
     var chatDir = Path.Join(
                 hostEnv.WebRootPath,

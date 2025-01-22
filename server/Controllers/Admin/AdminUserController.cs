@@ -1,10 +1,12 @@
-using ChatApp.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+
+using ChatApp.Models;
+using ChatApp.Services;
 
 namespace ChatApp.Controllers.Admin;
 
@@ -17,18 +19,21 @@ public class AdminUserController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly OnlineUserService onlineUserSvc;
+    private readonly ActiveDirectoryService ldapSvc;
 
     public AdminUserController(
         IHubContext<ChatHub, IChatClient> chatHubSvc,
         UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager,
-        OnlineUserService onlineUserSvc
+        OnlineUserService onlineUserSvc,
+        ActiveDirectoryService ldapSvc
     )
     {
         this.chatHubSvc = chatHubSvc;
         _userManager = userManager;
         _roleManager = roleManager;
         this.onlineUserSvc = onlineUserSvc;
+        this.ldapSvc = ldapSvc;
     }
 
     [HttpPost()]
@@ -64,6 +69,8 @@ public class AdminUserController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ListUsers()
     {
+        var ldapUsers = ldapSvc.GetUsers();
+
         var users = await _userManager.Users
             .AsNoTracking()
             .Select(
@@ -75,6 +82,7 @@ public class AdminUserController : ControllerBase
             )
             .ToListAsync();
 
+        users.AddRange(ldapUsers);
         return Ok(users);
     }
 
@@ -140,4 +148,10 @@ public class AdminUserController : ControllerBase
 
         return Ok(result.Succeeded);
     }
+
+    // [HttpGet]
+    // public IActionResult SearchLdapAccount([FromServices] ActiveDirectoryService ldapSvc)
+    // {
+    //     return Ok(ldapSvc.GetUsers());
+    // }
 }

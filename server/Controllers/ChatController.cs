@@ -57,7 +57,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpPost("file")]
-    public async Task<IActionResult> FileMessageAsync([FromForm] FileMessageRequest request, [FromServices] UploadManager uploadManager, CancellationToken cancellationToken)
+    public async Task<IActionResult> FileMessageAsync([FromForm] FileMessageRequest request, [FromServices] UploadManagerService uploadManager, CancellationToken cancellationToken)
     {
         if (request.File == null)
         {

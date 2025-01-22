@@ -14,6 +14,8 @@ public class UserDto
 
   public bool Online { get; set; }
 
+  public bool IsWin { get; set; }
+
   public static UserDto FromUser(User user, string role)
   {
     return new UserDto

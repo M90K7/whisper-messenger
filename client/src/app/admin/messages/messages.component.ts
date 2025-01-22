@@ -8,6 +8,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ChatService } from "@app/services";
 import { MessageDto } from "@app/models";
+import { DateTimeFormatPipe } from "@app/pipes";
 
 @Component({
   selector: 'app-messages',
@@ -17,7 +18,9 @@ import { MessageDto } from "@app/models";
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatTableModule
+    MatTableModule,
+
+    DateTimeFormatPipe
   ],
   templateUrl: './messages.component.html',
   styleUrl: './messages.component.scss'
@@ -26,7 +29,7 @@ export class MessagesComponent {
 
   search?: string;
 
-  displayedColumns: string[] = ['sender.fullName', 'receiver.fullName'];
+  displayedColumns: string[] = ["id", 'sender.fullName', 'receiver.fullName', "timestamp", "content", "filePath", "removed", "seen"];
   columnsToDisplay: string[] = this.displayedColumns.slice();
   dataSource = new MatTableDataSource<MessageDto>([]);
 
