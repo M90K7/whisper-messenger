@@ -58,6 +58,7 @@ public class AdminUserController : ControllerBase
 
         var userDto = UserDto.FromUser(user, false);
         await onlineUserSvc.SendToAllUserWithExceptAsync(chatHubSvc, userDto, [User.Identity.Name]);
+        userDto.Role = request.Role;
         return Ok(userDto);
     }
 

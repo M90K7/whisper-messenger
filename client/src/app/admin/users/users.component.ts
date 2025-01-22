@@ -24,7 +24,7 @@ import { UserDto } from "@app/models";
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersComponent {
   readonly dialog = inject(MatDialog);
@@ -60,15 +60,13 @@ export class UsersComponent {
 
     dialogRef.afterClosed().subscribe((_user: UserDto) => {
       if (user && typeof user === "object") {
-        if (user) {
+        if (_user) {
           Object.assign(user, _user);
           this.users$.update(_users => Array.from(_users));
-        } else {
-          this.users$.update(_users => {
-            _users.push(_user);
-            return Array.from(_users);
-          });
         }
+      } else if (_user && typeof _user === "object") {
+        this.users$.update(_users => Array.from([..._users, _user]));
+
       }
     });
   }
