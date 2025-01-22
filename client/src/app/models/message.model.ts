@@ -1,3 +1,4 @@
+import { UserDto } from "./user.model";
 
 export interface MessageDto {
   id?: number;
@@ -10,6 +11,11 @@ export interface MessageDto {
   timeFa?: string;
   status: number;
   timestamp?: string;
+
+  removed?: boolean;
+
+  sender?: UserDto;
+  receiver?: UserDto;
 }
 
 export interface ConfirmMessageDto {

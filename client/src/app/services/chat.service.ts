@@ -33,4 +33,8 @@ export class ChatService {
     }
     return undefined;
   }
+
+  getAdminChats() {
+    return this.http.get<MessageDto[]>(this._urlSvc.chat.admin.list);
+  }
 }

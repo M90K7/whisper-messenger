@@ -32,7 +32,10 @@ export class UrlService {
     send: this._chatUrl,
     sendFile: this._chatUrl + "/File",
     history: this._chatUrl + "/history",
-
+    admin: {
+      list: this._chatUrl + "/admin",
+      delete: this._chatUrl + "/admin",
+    }
   };
 
   user = {

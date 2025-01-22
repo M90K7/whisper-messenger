@@ -14,6 +14,8 @@ public class UserDto
 
   public bool Online { get; set; }
 
+  public bool IsWin { get; set; }
+
   public static UserDto FromUser(User user, string role)
   {
     return new UserDto
@@ -44,11 +46,12 @@ public class UserDto
 }
 
 
-public class ConfirmDto
+public class FileProgressDto
 {
-  public int MessageId { get; set; }
-  public int ReceiverId { get; set; }
-  public string FilePath { get; set; }
-  public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+  public string FileName { get; set; }
 
+  public long TotalLength { get; set; }
+
+  public int Percent { get; set; }
+  public long ReadLength { get; set; }
 }

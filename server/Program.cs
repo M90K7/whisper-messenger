@@ -9,6 +9,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using System.Net;
+using ChatApp.Services;
+using whisper_messenger.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,6 +83,8 @@ builder.Services.AddAuthorization(
 );
 builder.Services.Configure<JwtSettings>(jwtSettings);
 builder.Services.AddSingleton<OnlineUserService>();
+builder.Services.AddScoped<ActiveDirectoryService>();
+builder.Services.AddScoped<UploadManagerService>();
 
 
 // Add services

@@ -11,6 +11,7 @@ export interface UserDto {
   role: string;
   email: string;
   uptimeMinutes: number;
+  isWin: boolean;
 }
 
 export function decodeBase64Utf8(base64: string) {

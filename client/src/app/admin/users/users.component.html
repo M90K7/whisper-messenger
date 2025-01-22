@@ -7,7 +7,13 @@
 @for (user of users$(); track $index) {
 <mat-card class="user-card d-flex flex-column gap-3 "
           appearance="outlined">
-  <mat-card-header>
+
+  <mat-card-header class="position-relative">
+    @if(user.isWin) {
+    <img mat-card-avatar
+         class="win-icon"
+         src="/img/windows.png">
+    }
     <img mat-card-avatar
          [src]="user.avatar"
          onerror="this.src = '/img/default-profile.svg'">
@@ -28,6 +34,7 @@
       </span>
     </div>
   </mat-card-content>
+  @if(!user.isWin) {
   <mat-card-actions class="justify-content-end gap-2">
     <button mat-raised-button
             (click)="addUser(user)">ویرایش</button>
@@ -35,5 +42,6 @@
             class="error"
             (click)="deleteUser(user, $index)">حـذف</button>
   </mat-card-actions>
+  }
 </mat-card>
 }
