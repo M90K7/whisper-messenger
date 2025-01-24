@@ -26,7 +26,7 @@ public class AdminChatController : ControllerBase
   }
 
   [HttpDelete("{messageId}")]
-  public async Task<IActionResult> DeleteMessageAsync(int messageId)
+  public async Task<IActionResult> DeleteMessageAsync([FromRoute] int messageId)
   {
     var rowDelete = await _dbContext.Messages.Where(m => m.Id == messageId).ExecuteDeleteAsync();
 

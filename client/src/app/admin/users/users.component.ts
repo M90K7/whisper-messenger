@@ -90,4 +90,15 @@ export class UsersComponent {
     });
 
   }
+
+  registerUser(user: UserDto) {
+    user.isWindows = true;
+    this.userSvc.create(user).subscribe({
+      next: (res) => {
+        user.id = res.id;
+      },
+      error: (err) => {
+      }
+    });
+  }
 }

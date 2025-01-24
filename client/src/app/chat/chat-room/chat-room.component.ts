@@ -2,7 +2,7 @@ import { NgClass, NgFor, NgIf } from "@angular/common";
 import { Component, OnInit, ViewChild, ElementRef, input, inject, signal, viewChild, DestroyRef } from '@angular/core';
 import { FormsModule } from "@angular/forms";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { Observable } from "rxjs";
+import { Observable, pipe } from "rxjs";
 
 import { MatIconModule } from "@angular/material/icon";
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,8 +12,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule } from '@angular/material/badge';
 
 import { AuthService, ChatService, FileService, WebSocketService } from "@app/services";
-import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, UserDto } from "@app/models";
+import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, snackSuccess, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-chat-room',
@@ -26,12 +27,16 @@ import { ChatRoomHeaderComponent } from "./chat-room-header";
     MatButtonModule,
     MatDividerModule,
     MatBadgeModule,
+    MatSnackBarModule,
     ChatRoomHeaderComponent
   ],
   templateUrl: './chat-room.component.html',
   styleUrls: ['./chat-room.component.scss'],
 })
 export class ChatRoomComponent implements OnInit {
+
+  readonly _snackBar = inject(MatSnackBar);
+
   readonly selectedUser = input.required<UserDto>(); // Receiver's info
 
   readonly _authSvc = inject(AuthService);
@@ -51,6 +56,13 @@ export class ChatRoomComponent implements OnInit {
   destroyRef = inject(DestroyRef);
 
   constructor(private chatService: ChatService, private fileService: FileService) {
+
+    toObservable(this.selectedUser).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.page = 1;
+      this.loadChatHistory();
+    });
   }
   ngOnInit(): void {
     this.loadChatHistory();
@@ -155,6 +167,19 @@ export class ChatRoomComponent implements OnInit {
       return undefined;
 
     return files[0];
+  }
+
+  deleteMessage(message: MessageDto, index: number) {
+    this.chatService.deleteChat(message.id!).subscribe(
+      {
+        next: () => {
+          this.messages().splice(index, 1);
+          this.messages.update(v => Array.from(v));
+
+          this._snackBar.open("حذف با موفقیت انجام شد.", "", snackSuccess);
+        }
+      }
+    );
   }
 
   clearFile() {

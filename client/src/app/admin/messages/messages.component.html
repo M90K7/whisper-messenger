@@ -78,6 +78,17 @@
             *matCellDef="let element"> {{element.seen}} </td>
       </ng-container>
 
+      <ng-container matColumnDef="deleteAction">
+        <th mat-header-cell
+            *matHeaderCellDef> حذف </th>
+        <td mat-cell
+            *matCellDef="let element">
+          <button mat-button
+                  class="error"
+                  (click)="deleteMessage(element)">حـذف</button>
+        </td>
+      </ng-container>
+
       <!-- Name Column -->
       <!-- <ng-container matColumnDef="name">
         <th mat-header-cell

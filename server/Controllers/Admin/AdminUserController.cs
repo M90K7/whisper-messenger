@@ -50,10 +50,11 @@ public class AdminUserController : ControllerBase
             Email = request.Email,
             FullName = request.FullName,
             Avatar = request.Avatar,
-            UptimeMinutes = request.UptimeMinutes
+            UptimeMinutes = request.UptimeMinutes <= 0 ? 60 : request.UptimeMinutes,
+            IsWindows = request.IsWindows
         };
 
-        var result = await _userManager.CreateAsync(user, request.Password);
+        var result = request.IsWindows ? await _userManager.CreateAsync(user) : await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
             return BadRequest(result.Errors);
@@ -83,7 +84,9 @@ public class AdminUserController : ControllerBase
             )
             .ToListAsync();
 
-        users.AddRange(ldapUsers);
+
+
+        users.AddRange(ldapUsers.Where(lu => !users.Any(u => u.UserName == lu.UserName)));
         return Ok(users);
     }
 

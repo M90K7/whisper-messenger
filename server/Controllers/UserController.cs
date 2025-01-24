@@ -147,6 +147,8 @@ namespace ChatApp.Controllers
         public string Role { get; set; }
         public string Avatar { get; set; }
         public int UptimeMinutes { get; set; }
+
+        public bool IsWindows { get; set; }
     }
 
     public class EditProfileRequest

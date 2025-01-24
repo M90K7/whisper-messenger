@@ -37,4 +37,11 @@ export class ChatService {
   getAdminChats() {
     return this.http.get<MessageDto[]>(this._urlSvc.chat.admin.list);
   }
+
+  deleteChat(chatId: number) {
+    return this.http.delete(this._urlSvc.chat.delete + "/" + chatId);
+  }
+  deleteAdminChat(chatId: number) {
+    return this.http.delete(this._urlSvc.chat.admin.delete + "/" + chatId);
+  }
 }

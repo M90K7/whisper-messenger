@@ -50,13 +50,13 @@ namespace ChatApp.Services
               if (fullName != null)
                 users.Add(new UserDto
                 {
-                  Id = -1,
+                  Id = 0,
                   FullName = fullName,
                   UserName = username,
                   Email = email,
                   Avatar = profilePath,
                   Role = group,
-                  IsWin = true
+                  IsWindows = true
                 });
             }
           }
@@ -65,48 +65,61 @@ namespace ChatApp.Services
       return users;
     }
 
-    public UserDto Login(string username, string password)
+    public UserDto Login(string user, string password)
     {
       try
       {
         var ldapCfg = cfg.GetSection("LDAP");
-        // ایجاد یک PrincipalContext برای اتصال به Active Directory
-        using (PrincipalContext context = new PrincipalContext(ContextType.Domain, ldapCfg["Domain"]))
+
+        using (var entry = new DirectoryEntry($"LDAP://{ldapCfg["Domain"]}", "ROOT\\" + user, password))
         {
-          // احراز هویت کاربر
-          bool isValid = context.ValidateCredentials(username, password);
-          if (isValid)
+          using (var searcher = new DirectorySearcher(entry))
           {
-            Console.WriteLine("احراز هویت موفقیت‌آمیز بود.");
+            // (&(objectClass=user)(objectCategory=person))
+            // searcher.Filter = "(&(objectClass=user)(objectCategory=person))";  // "(objectCategory=person)";
+            searcher.Filter = "(sAMAccountName=" + user + ")";
+            searcher.PropertiesToLoad.Add("samaccountname");
+            searcher.PropertiesToLoad.Add("displayname");
+            searcher.PropertiesToLoad.Add("memberOf");
+            searcher.PropertiesToLoad.Add("mail");
+            searcher.PropertiesToLoad.Add("profilePath");
 
-            // دریافت اطلاعات کاربر
-            UserPrincipal user = UserPrincipal.FindByIdentity(context, username);
-
-            if (user != null)
+            //foreach (SearchResult result in searcher.FindOne())
+            SearchResult result = searcher.FindOne();
+            if (result != null)
             {
-              if (user.Enabled.HasValue && user.Enabled.Value)
-                return new UserDto
+              if (result.Properties.Contains("samaccountname"))
+              {
+                string username = result.Properties["samaccountname"][0].ToString();
+                string fullName = FindFirstOrDefault(result.Properties["displayname"]);
+                var group = FindRole(result.Properties["memberOf"]);
+                string email = FindFirstOrDefault(result.Properties["mail"]);
+                string profilePath = FindFirstOrDefault(result.Properties["profilePath"]);
+
+                if (group != null)
                 {
-                  UserName = user.SamAccountName,
-                  FullName = user.SamAccountName,
-                  Email = user.EmailAddress,
-                  Role = FindRole(user.GetGroups())
-                };
+                  group = ExtractCNFromDN(group);
+                }
+
+                if (fullName != null)
+                  return new UserDto
+                  {
+                    Id = 0,
+                    FullName = fullName,
+                    UserName = username,
+                    Email = email,
+                    Avatar = profilePath,
+                    Role = group,
+                    IsWindows = true
+                  };
+              }
             }
-            else
-            {
-              Console.WriteLine("کاربر یافت نشد.");
-            }
-          }
-          else
-          {
-            Console.WriteLine("احراز هویت ناموفق بود.");
           }
         }
       }
       catch (Exception ex)
       {
-        Console.WriteLine("خطا: " + ex.Message);
+        Console.WriteLine(ex.Message);
       }
       return null;
     }

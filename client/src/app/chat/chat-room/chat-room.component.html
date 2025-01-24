@@ -34,9 +34,17 @@
           </a>
           }
         </div>
-        @if(message.timestamp) {
-        <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
-        }
+        <div class="d-flex align-items-center justify-content-between">
+
+          @if(message.timestamp) {
+          <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+          }
+          <span>
+            <button mat-button
+                    class="error"
+                    (click)="deleteMessage(message, $index)">حـذف</button>
+          </span>
+        </div>
       </div>
       }@empty {
       @if(loading()) {

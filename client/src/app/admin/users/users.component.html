@@ -9,7 +9,7 @@
           appearance="outlined">
 
   <mat-card-header class="position-relative">
-    @if(user.isWin) {
+    @if(user.isWindows) {
     <img mat-card-avatar
          class="win-icon"
          src="/img/windows.png">
@@ -34,7 +34,7 @@
       </span>
     </div>
   </mat-card-content>
-  @if(!user.isWin) {
+  @if(!user.isWindows) {
   <mat-card-actions class="justify-content-end gap-2">
     <button mat-raised-button
             (click)="addUser(user)">ویرایش</button>
@@ -42,6 +42,12 @@
             class="error"
             (click)="deleteUser(user, $index)">حـذف</button>
   </mat-card-actions>
+  }@else {
+  @if(!user.id) {
+  <button mat-raised-button
+          class="w-50 m-auto"
+          (click)="registerUser(user)">ثبت</button>
+  }
   }
 </mat-card>
 }

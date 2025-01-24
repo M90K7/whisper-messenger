@@ -38,21 +38,34 @@ namespace ChatApp.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            string role = null;
             var user = await _userManager.FindByNameAsync(request.Username);
-            if (user != null)
+            if (user != null && user.IsWindows)
             {
+                var winUser = _adSvc.Login(request.Username, request.Password);
 
-                if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+                if (winUser == null)
                 {
                     return Unauthorized("Invalid username or password.");
                 }
+
+                user.FullName = winUser.FullName;
+                user.Email = winUser.Email;
+
+                role = winUser.Role;
+
             }
-            else
+            else if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                user = _adSvc.Login(request.Username, request.Password);
+                return Unauthorized("Invalid username or password.");
             }
 
-            var token = GenerateJwtToken(user);
+            if (!user.IsWindows)
+                role = string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray());
+
+            user.UptimeMinutes = user.UptimeMinutes <= 0 ? 60 : user.UptimeMinutes;
+
+            var token = GenerateJwtToken(user, role);
             return Ok(new { Token = token, ExpiresInMinutes = user.UptimeMinutes });
         }
 
@@ -65,7 +78,7 @@ namespace ChatApp.Controllers
             return Ok(new { Token = token, ExpiresInMinutes = user.UptimeMinutes });
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, string role = null)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -76,13 +89,10 @@ namespace ChatApp.Controllers
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
                 new Claim(JwtRegisteredClaimNames.GivenName, user.FullName ?? ""),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName ?? ""),
-                new Claim("role", string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())),
                 new Claim(ClaimTypes.Name, user.Id.ToString()),
                 // new Claim(ClaimTypes.Email, user.Email),
-                new Claim(
-                    ClaimTypes.Role,
-                    string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray())
-                ),
+                new Claim("role", role),
+                new Claim(ClaimTypes.Role,role),
                 // new Claim(ClaimTypes.GivenName, user.FullName ?? ""),
                 new Claim("avatar", user.Avatar ?? ""),
             };

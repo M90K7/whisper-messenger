@@ -121,9 +121,12 @@ public class ChatController : ControllerBase
         var currentUserId = int.Parse(User.Identity.Name);
         var messages = await _context.Messages
             .Where(
-                m =>
+                m => !m.Removed && (
+
                     (m.SenderId == currentUserId && m.ReceiverId == userId)
                     || (m.SenderId == userId && m.ReceiverId == currentUserId)
+                )
+
             )
             // .OrderByDescending(m => m.Timestamp)
             .Skip((page - 1) * pageSize)
@@ -134,7 +137,7 @@ public class ChatController : ControllerBase
     }
 
     [HttpDelete("{messageId}")]
-    public async Task<IActionResult> DeleteMessageAsync(int messageId)
+    public async Task<IActionResult> DeleteMessageAsync([FromRoute] int messageId)
     {
         var _userId = int.Parse(User.Identity.Name);
         var message = await _context.Messages.SingleOrDefaultAsync(m => m.Id == messageId && (m.SenderId == _userId || m.ReceiverId == _userId));
@@ -144,7 +147,7 @@ public class ChatController : ControllerBase
             return NotFound();
         }
 
-        var rowDelete = await _context.Messages.ExecuteUpdateAsync(m => m.SetProperty(p => p.Removed, true));
+        var rowDelete = await _context.Messages.Where(m => m.Id == message.Id).ExecuteUpdateAsync(m => m.SetProperty(p => p.Removed, true));
 
         if (rowDelete > 0)
         {
