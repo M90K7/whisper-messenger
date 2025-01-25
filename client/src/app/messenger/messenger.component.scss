@@ -7,3 +7,10 @@
 .h-container {
   height: calc(99vh - var(--mat-toolbar-standard-height, 64px));
 }
+
+.img-icon {
+  border-radius: 50%;
+  width: 40px;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}

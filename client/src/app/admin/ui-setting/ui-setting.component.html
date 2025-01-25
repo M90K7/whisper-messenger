@@ -1,0 +1,128 @@
+<form class="d-flex flex-column gap-3 align-items-start"
+      [formGroup]="formGrp">
+  <mat-form-field appearance="outline"
+                  class="col-lg-3 col-md-6 col">
+    <mat-label>نام کوتاه برنامه</mat-label>
+    <input matInput
+           autocomplete="off"
+           name="shortTitle"
+           formControlName="shortTitle" />
+    @let shortTitle_invalid = formGrp.controls['shortTitle'].touched && formGrp.controls['shortTitle'].invalid;
+    @if(shortTitle_invalid) {
+    <mat-error>
+      نام کوتاه برنامه اجباری میباشد.
+    </mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline"
+                  class="col-lg-3 col-md-6 col">
+    <mat-label>نام برنامه</mat-label>
+    <input matInput
+           autocomplete="off"
+           name="title"
+           formControlName="title" />
+    @let title_invalid = formGrp.controls['title'].touched && formGrp.controls['title'].invalid;
+    @if(title_invalid) {
+    <mat-error>
+      نام برنامه اجباری میباشد.
+    </mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline"
+                  class="col-lg-3 col-md-6 col">
+    <mat-label>حداکثر اندازه تصویر پروفایل کاربران</mat-label>
+    <span matTextPrefix>MB</span>
+    <input matInput
+           min="0.1"
+           type="number"
+           name="maxAvatarSize"
+           formControlName="maxAvatarSize" />
+    @let maxAvatarSize_invalid = formGrp.controls['maxAvatarSize'].touched && formGrp.controls['maxAvatarSize'].invalid;
+    @if(maxAvatarSize_invalid){
+    <mat-error>
+      اندازه فایل اجباری میباشد و کمترین اندازه 0.1 میباشد
+    </mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline"
+                  class="col-lg-3 col-md-6 col">
+    <mat-label>حداکثر اندازه آپلود فایل در گفتگو</mat-label>
+    <span matTextPrefix>MB</span>
+    <input matInput
+           min="0.1"
+           type="number"
+           name="maxFileUploadSize"
+           formControlName="maxFileUploadSize" />
+    @let maxFileUploadSize_invalid = formGrp.controls['maxFileUploadSize'].touched &&
+    formGrp.controls['maxFileUploadSize'].invalid;
+    @if(maxFileUploadSize_invalid){
+    <mat-error>
+      اندازه فایل اجباری میباشد و کمترین اندازه 0.1 میباشد
+    </mat-error>
+    }
+  </mat-form-field>
+
+  <button mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="!formGrp.valid"
+          (click)="saveApp()">ذخیره</button>
+</form>
+
+<mat-divider class="my-2"></mat-divider>
+
+<!-- Icon -->
+<div class="d-flex align-items-center gap-2 pb-4"
+     (click)="appFileInput.click()">
+  <div class="app-img">
+    <img #appImg
+         [tabIndex]="0"
+         [src]="appSvc.appIconImg"
+         alt="Avatar"
+         class="img-logo-icon"
+         onerror="this.src = '/img/logo.svg'" />
+    <input #appFileInput
+           class="d-none"
+           type="file"
+           accept="image/*"
+           (change)="onAppImageChange($event, appImg)" />
+  </div>
+  <span class="app-img-desc">انتخاب تصویر آیکون برنامه.</span>
+</div>
+
+<button mat-flat-button
+        color="primary"
+        type="submit"
+        [disabled]="!appIconForm"
+        (click)="updateAppImage()">ذخیره</button>
+
+<mat-divider class="my-2"></mat-divider>
+
+<!-- Background -->
+<div class="d-flex flex-column gap-2 pb-4">
+  <div class="app-bg">
+    <img #appBgImg
+         [tabIndex]="0"
+         [src]="appSvc.appBgImg"
+         alt="Background"
+         class="app-bg--img"
+         (click)="appBgInput.click()"
+         onerror="this.src = '/img/bg.jpg'" />
+    <input #appBgInput
+           class="d-none"
+           type="file"
+           accept="image/*"
+           (change)="onAppBgChange($event, appBgImg)" />
+  </div>
+  <span class="app-bg-desc px-4"
+        (click)="appBgInput.click()">انتخاب تصویر پس‌زمینه برنامه. <br>aspect ratio: 3/4</span>
+</div>
+
+<button mat-flat-button
+        color="primary"
+        type="submit"
+        [disabled]="!appBgForm"
+        (click)="updateAppBg()">ذخیره</button>

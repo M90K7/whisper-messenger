@@ -86,7 +86,22 @@ public class AdminUserController : ControllerBase
 
 
 
-        users.AddRange(ldapUsers.Where(lu => !users.Any(u => u.UserName == lu.UserName)));
+        users.AddRange(ldapUsers.Where(lu =>
+        {
+            var u = users.FirstOrDefault(u => u.UserName == lu.UserName);
+            if (u == null)
+            {
+                return true;
+            }
+            else
+            {
+                u.FullName = lu.FullName;
+                u.Email = lu.Email;
+                u.Role = lu.Role;
+                u.IsWindows = true;
+                return false;
+            }
+        }));
         return Ok(users);
     }
 

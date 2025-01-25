@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
+import { environment } from "../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class UrlService {
 
-  baseServer = "https://localhost:5000";
+  baseServer = environment.serverUrl;
   baseUrl = this.baseServer + "/api";
   baseSocket = this.baseServer + "/io/chat";
 
@@ -13,16 +14,15 @@ export class UrlService {
   _chatUrl = this.baseUrl + "/chat";
 
   cdn = {
-    profiles: "https://localhost:5000/profiles",
-    files: "https://localhost:5000/files",
+    profiles: this.baseServer + "/profiles",
+    files: this.baseServer + "/files",
+    apps: this.baseServer + "/apps",
   };
 
   auth = {
     login: this.baseUrl + "/auth/login",
     refresh: this.baseUrl + "/auth/refresh"
   };
-
-
 
   chat = {
     ws: {
@@ -52,5 +52,16 @@ export class UrlService {
       update: this.baseUserUrl + "/admin",
       delete: this.baseUserUrl + "/admin",
     }
+  };
+
+  adSetting = {
+    update: this.baseUrl + "/Ad",
+    test: this.baseUrl + "/Ad/test"
+  };
+
+  appSetting = {
+    url: this.baseUrl + "/apps",
+    icon: this.baseUrl + "/apps/icon",
+    background: this.baseUrl + "/apps/bg",
   };
 }

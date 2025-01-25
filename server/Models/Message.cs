@@ -1,6 +1,5 @@
 namespace ChatApp.Models
 {
-
   public class Message
   {
     public int Id { get; set; }
@@ -23,6 +22,4 @@ namespace ChatApp.Models
 
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
   }
-
-
 }

@@ -1,12 +1,23 @@
 <mat-toolbar class="justify-content-between">
   <a class="d-flex align-items-center gap-2"
      routerLink="chat">
-    <img src="/img/logo.svg"
+    <img class="img-logo-icon"
+         [src]="appSvc.appIconImg"
          width="40"
-         alt="">
-    نجــوا
+         alt=""
+         onerror="this.src = '/img/logo.svg'">
+    {{ appSvc.shortTitle }}
   </a>
   <div class="d-flex align-items-center gap-2">
+
+    @if(this.authSvc.isAdmin()){
+    <button mat-icon-button
+            matTooltip="تنظیمات AD"
+            (click)="openAdSetting()">
+      <!-- <mat-icon>admin_panel_settings</mat-icon> -->
+      <img src="/img/windows.png">
+    </button>
+    }
 
     @if(this.authSvc.isAdmin()){
     <button mat-icon-button

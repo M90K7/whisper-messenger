@@ -9,7 +9,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ProfileArgs, ProfileComponent } from "@app/profile/profile.component";
-import { AuthService, WebSocketService } from "@app/services";
+import { ActiveDirectorySettingComponent } from "@app/active-directory-setting";
+import { AppService, AuthService, WebSocketService } from "@app/services";
 import { UserDto } from "@app/models";
 
 @Component({
@@ -32,6 +33,7 @@ export class MessengerComponent implements OnDestroy {
 
   readonly dialog = inject(MatDialog);
   readonly authSvc = inject(AuthService);
+  readonly appSvc = inject(AppService);
   readonly routerSvc = inject(Router);
   private readonly _wsSvc = inject(WebSocketService);
 
@@ -62,6 +64,18 @@ export class MessengerComponent implements OnDestroy {
           this.user.set(this.authSvc.getUser()!);
         }
       });
+    });
+  }
+
+  openAdSetting() {
+    const dialogRef = this.dialog.open(ActiveDirectorySettingComponent, {
+      data: {},
+      width: 'min(50%, 350px)'
+    });
+
+    dialogRef.afterClosed().subscribe({
+      next: () => {
+      }
     });
   }
 

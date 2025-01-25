@@ -10,7 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarConfig, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { AuthService, UserService } from "@app/services";
+import { AppService, AuthService, UserService } from "@app/services";
 import { snackError, snackSuccess, UserDto } from "@app/models";
 import { ErrorStateMatcher } from "@angular/material/core";
 import { Router } from "@angular/router";
@@ -44,6 +44,9 @@ export class ProfileComponent implements OnInit {
 
   readonly data = inject<ProfileArgs>(MAT_DIALOG_DATA);
   readonly _snackBar = inject(MatSnackBar);
+
+  appSvc = inject(AppService);
+
   profileForm: FormGroup;
 
   defaultAvatar: string = '/img/default-profile.svg'; // Replace with your default avatar path
@@ -135,7 +138,7 @@ export class ProfileComponent implements OnInit {
   // Handle avatar change
   onAvatarChange(event: Event) {
     const files = event.target && (event.target as HTMLInputElement).files;
-    if (files && files[0].size < (256 * 1024 * 1024 * 5) && this.isImage(files[0].name)) {
+    if (files && files[0].size < this.appSvc.avatarSize && this.isImage(files[0].name)) {
       var form = new FormData();
       form.append("avatar", files[0], files[0].name);
 

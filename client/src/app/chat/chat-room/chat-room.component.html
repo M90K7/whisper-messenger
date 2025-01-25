@@ -37,12 +37,19 @@
         <div class="d-flex align-items-center justify-content-between">
 
           @if(message.timestamp) {
-          <span class="timestamp">{{ formatTimestamp(message.timestamp) }}</span>
+          <span class="timestamp">{{ message.timestamp | dateTimeFormat }}</span>
           }
           <span>
-            <button mat-button
+            <!-- <button mat-button
                     class="error"
-                    (click)="deleteMessage(message, $index)">حـذف</button>
+                    (click)="deleteMessage(message, $index)">
+
+            </button> -->
+            <button mat-icon-button
+                    class="error-icon"
+                    (click)="deleteMessage(message, $index)">
+              <mat-icon>delete</mat-icon>
+            </button>
           </span>
         </div>
       </div>

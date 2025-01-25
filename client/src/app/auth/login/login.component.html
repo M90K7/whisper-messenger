@@ -1,29 +1,44 @@
-<mat-card class="a-flex-column gap-4">
-  <mat-card-header>
-    <h2>سامانه ورود</h2>
-  </mat-card-header>
-  <mat-card-content>
-    <form class="a-flex-column"
-          [formGroup]="loginForm"
-          (ngSubmit)="onSubmit()">
-      <mat-form-field>
-        <mat-label>نام کاربری</mat-label>
-        <input matInput
-               name="username"
-               formControlName="username" />
-      </mat-form-field>
+<div class="d-flex">
+  <div class="col-lg-6 d-sm-node">
+    <img class="img-bg"
+         [src]="appSvc.appBgImg"
+         onerror="this.src = '/img/bg.jpg'">
+  </div>
+  <mat-card class="col-lg-6 col-md-12 col a-flex-column gap-4">
+    <mat-card-header class="d-flex align-items-center gap-2">
+      <img class="img-logo-icon"
+           [src]="appSvc.appIconImg"
+           width="40"
+           alt=""
+           onerror="this.src = '/img/logo.svg'">
+      <h2 class="mb-0">{{ appSvc.title || appSvc.shortTitle }}</h2>
+    </mat-card-header>
+    <mat-card-header>
+      <h3>سامانه ورود</h3>
+    </mat-card-header>
+    <mat-card-content>
+      <form class="a-flex-column"
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()">
+        <mat-form-field>
+          <mat-label>نام کاربری</mat-label>
+          <input matInput
+                 name="username"
+                 formControlName="username" />
+        </mat-form-field>
 
-      <mat-form-field>
-        <mat-label>رمزعبور</mat-label>
-        <input matInput
-               name="password"
-               formControlName="password"
-               type="password" />
-      </mat-form-field>
+        <mat-form-field>
+          <mat-label>رمزعبور</mat-label>
+          <input matInput
+                 name="password"
+                 formControlName="password"
+                 type="password" />
+        </mat-form-field>
 
-      <button mat-flat-button
-              color="primary"
-              type="submit">ورود</button>
-    </form>
-  </mat-card-content>
-</mat-card>
+        <button mat-flat-button
+                color="primary"
+                type="submit">ورود</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

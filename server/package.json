@@ -2,6 +2,7 @@
   "name": "whisper-messenger",
   "scripts": {
     "mig": "dotnet ef migrations add InitialCreate",
-    "mig:update": "dotnet ef database update"
+    "mig:update": "dotnet ef database update",
+    "publish": "dotnet publish -o ./bin/publish"
   }
 }

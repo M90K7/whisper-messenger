@@ -3,6 +3,7 @@ using System;
 using ChatApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace whisper_messenger.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250124191647_AdColumnName")]
+    partial class AdColumnName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.11");
@@ -38,35 +41,6 @@ namespace whisper_messenger.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ActiveDirectories");
-                });
-
-            modelBuilder.Entity("ChatApp.Models.AppSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Icon")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MaxAvatarSize")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MaxFileUploadSize")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ShortTitle")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("background")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppSettings");
                 });
 
             modelBuilder.Entity("ChatApp.Models.Message", b =>

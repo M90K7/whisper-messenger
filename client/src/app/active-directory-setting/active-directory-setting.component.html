@@ -1,0 +1,93 @@
+<div class="d-flex align-items-center justify-content-between pe-3">
+  <h2 mat-dialog-title>{{ data.title || 'تنظیمات Active Directory' }}</h2>
+  <mat-icon mat-dialog-close>close</mat-icon>
+</div>
+<mat-divider></mat-divider>
+<mat-dialog-content>
+  <form class="d-flex flex-column gap-3 align-items-center"
+        [formGroup]="formGrp">
+    <!-- url -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>آدرس دامنه یا IP ویندوز سرور</mat-label>
+      <input matInput
+             autocomplete="off"
+             name="url"
+             formControlName="url" />
+      @let url_invalid = formGrp.controls['url'].touched && formGrp.controls['url'].invalid;
+      @if(url_invalid) {
+      <mat-error>
+        آدرس اجباری میباشد.
+      </mat-error>
+      }
+    </mat-form-field>
+
+    <!-- name -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>نام دامین</mat-label>
+      <input matInput
+             autocomplete="off"
+             name="name"
+             formControlName="name" />
+      @let name_invalid = formGrp.controls['name'].touched && formGrp.controls['name'].invalid;
+      @if(name_invalid){
+      <mat-error>
+        نام دامین اجباری میباشد.
+      </mat-error>
+      }
+    </mat-form-field>
+
+    <!-- username -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>نام کاربری</mat-label>
+      <input matInput
+             autocomplete="off"
+             name="username"
+             formControlName="username" />
+      @let username_invalid = formGrp.controls['username'].touched && formGrp.controls['username'].invalid;
+      @if(username_invalid){
+      <mat-error>
+        نام‌کاربری اجباری میباشد.
+      </mat-error>
+      }
+      @if(formGrp.value.name && formGrp.value.username) {
+      <mat-hint>
+        {{ formGrp.value.name + "\\" + formGrp.value.username }}
+      </mat-hint>
+      }
+    </mat-form-field>
+
+    <!-- adPassword -->
+    <mat-form-field appearance="outline"
+                    class="w-100">
+      <mat-label>رمزعبور</mat-label>
+      <input matInput
+             autocomplete="off"
+             name="adPassword"
+             formControlName="adPassword" />
+      @let adPassword_invalid = formGrp.controls['adPassword'].touched && formGrp.controls['adPassword'].invalid;
+      @if(adPassword_invalid){
+      <mat-error>
+        رمزعبور اجباری میباشد.
+      </mat-error>
+      }
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+<mat-divider></mat-divider>
+<mat-dialog-actions class="justify-content-between">
+  <!-- Submit Button -->
+  <button mat-flat-button
+          color="primary"
+          type="submit"
+          (click)="save()">ذخیره</button>
+
+  <button mat-raised-button
+          color="primary"
+          type="submit"
+          (click)="testConnectivity()">تست ارتباط</button>
+
+</mat-dialog-actions>

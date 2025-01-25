@@ -8,7 +8,7 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 
-import { AuthService } from "@app/services";
+import { AppService, AuthService } from "@app/services";
 import { Router } from "@angular/router";
 import { snackError } from "@app/models";
 
@@ -32,6 +32,7 @@ export class LoginComponent {
   loginForm: FormGroup;
 
   routerSvc = inject(Router);
+  appSvc = inject(AppService);
 
   readonly _snackBar = inject(MatSnackBar);
 

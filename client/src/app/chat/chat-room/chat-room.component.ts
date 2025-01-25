@@ -15,6 +15,7 @@ import { AuthService, ChatService, FileService, WebSocketService } from "@app/se
 import { ConfirmMessageDto, FileConfirmMessageDto, MessageDto, snackSuccess, UserDto } from "@app/models";
 import { ChatRoomHeaderComponent } from "./chat-room-header";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
+import { DateTimeFormatPipe } from "@app/pipes";
 
 @Component({
   selector: 'app-chat-room',
@@ -28,7 +29,8 @@ import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
     MatDividerModule,
     MatBadgeModule,
     MatSnackBarModule,
-    ChatRoomHeaderComponent
+    ChatRoomHeaderComponent,
+    DateTimeFormatPipe
   ],
   templateUrl: './chat-room.component.html',
   styleUrls: ['./chat-room.component.scss'],
