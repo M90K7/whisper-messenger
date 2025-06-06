@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using whisper_messenger.Services;
+using ChatApp.Services;
 
 namespace ChatApp.Controllers;
 

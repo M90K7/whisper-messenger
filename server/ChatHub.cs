@@ -44,7 +44,7 @@ namespace ChatApp
 
         }
 
-        public override async Task OnDisconnectedAsync(Exception? exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userId = Context.UserIdentifier;
             if (userId != null)

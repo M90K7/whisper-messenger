@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace whisper_messenger.Migrations
+namespace ChatApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20241211145321_InitialCreate")]

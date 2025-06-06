@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace whisper_messenger.Migrations
+namespace ChatApp.Migrations
 {
     /// <inheritdoc />
     public partial class AdColumnName : Migration

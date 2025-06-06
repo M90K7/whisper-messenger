@@ -11,8 +11,6 @@ namespace ChatApp.Data
 
     public DbSet<Message> Messages { get; set; }
 
-    public DbSet<ActiveDirectory> ActiveDirectories { get; set; }
-
     public DbSet<AppSetting> AppSettings { get; set; }
   }
 }

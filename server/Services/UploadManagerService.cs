@@ -4,7 +4,7 @@ using System.IO;
 using ChatApp;
 using Microsoft.AspNetCore.SignalR;
 
-namespace whisper_messenger.Services;
+namespace ChatApp.Services;
 
 
 public class UploadManagerService

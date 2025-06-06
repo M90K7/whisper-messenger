@@ -1,5 +1,4 @@
 using ChatApp.Models;
-using ChatApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -19,19 +18,16 @@ namespace ChatApp.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly ActiveDirectoryService _adSvc;
         private readonly JwtSettings _jwtSettings;
 
         public AuthController(
             UserManager<User> userManager,
             RoleManager<IdentityRole<int>> roleManager,
-            IOptions<JwtSettings> jwtSettings,
-            ActiveDirectoryService AdSvc
+            IOptions<JwtSettings> jwtSettings
         )
         {
             _userManager = userManager;
             this._roleManager = roleManager;
-            _adSvc = AdSvc;
             _jwtSettings = jwtSettings.Value;
         }
 
@@ -40,28 +36,12 @@ namespace ChatApp.Controllers
         {
             string role = null;
             var user = await _userManager.FindByNameAsync(request.Username);
-            if (user != null && user.IsWindows)
-            {
-                var winUser = _adSvc.Login(request.Username, request.Password);
-
-                if (winUser == null)
-                {
-                    return Unauthorized("Invalid username or password.");
-                }
-
-                user.FullName = winUser.FullName;
-                user.Email = winUser.Email;
-
-                role = winUser.Role;
-
-            }
-            else if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
                 return Unauthorized("Invalid username or password.");
             }
 
-            if (!user.IsWindows)
-                role = string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray());
+            role = string.Join(",", _userManager.GetRolesAsync(user).Result.ToArray());
 
             user.UptimeMinutes = user.UptimeMinutes <= 0 ? 60 : user.UptimeMinutes;
 

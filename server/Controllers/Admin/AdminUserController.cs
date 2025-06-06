@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 using ChatApp.Models;
-using ChatApp.Services;
 
 namespace ChatApp.Controllers.Admin;
 
@@ -19,21 +18,18 @@ public class AdminUserController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly OnlineUserService onlineUserSvc;
-    private readonly ActiveDirectoryService ldapSvc;
 
     public AdminUserController(
         IHubContext<ChatHub, IChatClient> chatHubSvc,
         UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager,
-        OnlineUserService onlineUserSvc,
-        ActiveDirectoryService ldapSvc
+        OnlineUserService onlineUserSvc
     )
     {
         this.chatHubSvc = chatHubSvc;
         _userManager = userManager;
         _roleManager = roleManager;
         this.onlineUserSvc = onlineUserSvc;
-        this.ldapSvc = ldapSvc;
     }
 
     [HttpPost()]
@@ -50,8 +46,7 @@ public class AdminUserController : ControllerBase
             Email = request.Email,
             FullName = request.FullName,
             Avatar = request.Avatar,
-            UptimeMinutes = request.UptimeMinutes <= 0 ? 60 : request.UptimeMinutes,
-            IsWindows = request.IsWindows
+            UptimeMinutes = request.UptimeMinutes <= 0 ? 60 : request.UptimeMinutes
         };
 
         var result = request.IsWindows ? await _userManager.CreateAsync(user) : await _userManager.CreateAsync(user, request.Password);
@@ -71,8 +66,6 @@ public class AdminUserController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> ListUsers()
     {
-        var ldapUsers = ldapSvc.GetUsers();
-
         var users = await _userManager.Users
             .AsNoTracking()
             .Select(
@@ -84,24 +77,6 @@ public class AdminUserController : ControllerBase
             )
             .ToListAsync();
 
-
-
-        users.AddRange(ldapUsers.Where(lu =>
-        {
-            var u = users.FirstOrDefault(u => u.UserName == lu.UserName);
-            if (u == null)
-            {
-                return true;
-            }
-            else
-            {
-                u.FullName = lu.FullName;
-                u.Email = lu.Email;
-                u.Role = lu.Role;
-                u.IsWindows = true;
-                return false;
-            }
-        }));
         return Ok(users);
     }
 

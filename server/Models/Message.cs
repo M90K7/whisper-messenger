@@ -8,7 +8,7 @@ namespace ChatApp.Models
     public int ReceiverId { get; set; }
     public User Receiver { get; set; }
     public string Content { get; set; }
-    public string? FilePath { get; set; }
+    public string FilePath { get; set; }
 
     /// <summary>
     /// null -> save on db
